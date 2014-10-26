@@ -36,20 +36,6 @@ public class Tracks8Activity extends Activity
     public static String DEV_KEY = "afe6602f9dfd8d5552dfa555feda9fab0a0a3643";
     public static String URL_HIP_HOP = "http://8tracks.com/mix_sets/tags:hip_hop:popular.json";
     public static int CAP_NUM_MIXES = 3;
-
-    private String readStream(InputStream is) {
-        try {
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
-            int i = is.read();
-            while (i != -1) {
-                bo.write(i);
-                i = is.read();
-            }
-            return bo.toString();
-        } catch (Exception e) {
-            return "";
-        }
-    }
     public static String TEST_MIX_URL = "http://8tracks.com/mixes/14.json?api_key="+DEV_KEY;
     public static String username = "coach_k";
     public static String password = "coach_k";
@@ -207,8 +193,7 @@ public class Tracks8Activity extends Activity
 
     private class TalkTo8Tracks extends AsyncTask<String, Void, Void> {
         protected Void doInBackground(String... params) {
-            try
-            {
+            try {
                 /*
                  * Testing HttpURLConnection
                  *
@@ -242,7 +227,7 @@ public class Tracks8Activity extends Activity
                  * Obtaining a Play Token
                  *
                  */
-                URL url = new URL("http://8tracks.com/sets/new.json?api_key="+DEV_KEY+"&api_version=3");
+                URL url = new URL("http://8tracks.com/sets/new.json?api_key=" + DEV_KEY + "&api_version=3");
                 String user_agent = System.getProperty("http.agent");
 
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -254,16 +239,17 @@ public class Tracks8Activity extends Activity
 
                 JSONObject reader = new JSONObject(readStream(in));
                 String play_token = reader.getString("play_token");
-                System.out.println("PLAY_TOKEN: "+play_token);
+                System.out.println("PLAY_TOKEN: " + play_token);
                 urlConnection.disconnect();
-            }
-            catch(Exception e)
-            {
+            } catch (Exception e) {
                 System.err.println("FAILURE - Could not send HTTP GET Request: " + e.getMessage());
                 e.printStackTrace();
-                System.err.println("FAILURE: "+e.getMessage());
+                System.err.println("FAILURE: " + e.getMessage());
                 //e.printStackTrace();
-	    }
+            }
+            return null;
+        }
+    }
 
 }
 
