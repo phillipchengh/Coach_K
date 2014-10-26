@@ -41,8 +41,18 @@ public class Tracks8Activity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracks8);
-        Void[] babies = {};
-        (new TalkTo8Tracks()).execute(babies);
+        try
+        {
+            URL url = new URL(TEST_MIX_URL);
+            URL[] urlArr = {url};
+            (new TalkTo8Tracks()).execute(urlArr);
+
+
+        }
+        catch(Exception e)
+        {
+             System.err.println("FAILURE: "+e.getMessage());
+        }
     }
 
 
@@ -65,13 +75,13 @@ public class Tracks8Activity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
-    private class TalkTo8Tracks extends AsyncTask<Void, Void, Void> {
-        protected Void doInBackground(Void... params) {
+    private class TalkTo8Tracks extends AsyncTask<URL, Void, Void> {
+        protected Void doInBackground(URL... urlArr) {
             try
             {
+                URL url = urlArr[0]; // Assumes the URL params is an array of one url
                 String user_agent = System.getProperty("http.agent");
 
-                URL url = new URL("http://www.android.com/");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setRequestProperty("User-Agent", user_agent);
@@ -83,7 +93,7 @@ public class Tracks8Activity extends Activity
             }
             catch(Exception e)
             {
-                System.err.println("FAILUREB - Could not send HTTP GET Request: "+e.getMessage());
+                System.err.println("FAILURE - Could not send HTTP GET Request: "+e.getMessage());
                 e.printStackTrace();
             }
             return null;
