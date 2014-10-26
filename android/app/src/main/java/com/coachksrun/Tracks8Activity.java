@@ -1,6 +1,7 @@
 package com.coachksrun;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,59 +41,8 @@ public class Tracks8Activity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracks8);
-
-        try
-        {
-
-            String user_agent = System.getProperty("http.agent");
-            /*
-            URL url = new URL(TEST_MIX_URL);
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("User-Agent", user_agent);
-            System.out.println("Connection: "+conn.toString());
-            int responseCode = conn.getResponseCode();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-            StringBuffer response = new StringBuffer();
-
-            String inputLine = in.readLine();
-
-            while( null != inputLine )
-            {
-                response.append(inputLine);
-                inputLine = in.readLine();
-            }
-
-            in.close();
-
-            //System.out.println(response.toString());
-
-            TextView textView = new TextView(this);
-            textView.setTextSize(40);
-            textView.setText(response.toString());
-            setContentView(textView);
-            */
-
-            URL url = new URL("http://www.android.com/");
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("User-Agent", user_agent);
-            urlConnection.setDoInput(true);
-            int responseCode = urlConnection.getResponseCode();
-            System.out.println("Response Code: "+responseCode);
-
-            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-            System.out.println(readStream(in));
-            urlConnection.disconnect();
-        }
-        catch(Exception e)
-        {
-            System.err.println("FAILURE - Could not send HTTP GET Request: "+e.getMessage());
-            e.printStackTrace();
-        }
+        Void[] babies = {};
+        (new TalkTo8Tracks()).execute(babies);
     }
 
 
@@ -113,5 +63,32 @@ public class Tracks8Activity extends Activity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private class TalkTo8Tracks extends AsyncTask<Void, Void, Void> {
+        protected Void doInBackground(Void... params) {
+            try
+            {
+                String user_agent = System.getProperty("http.agent");
+
+                URL url = new URL("http://www.android.com/");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestProperty("User-Agent", user_agent);
+                urlConnection.setDoInput(true);
+                int responseCode = urlConnection.getResponseCode();
+                System.out.println("Response Code: "+responseCode);
+
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                System.out.println(readStream(in));
+                urlConnection.disconnect();
+            }
+            catch(Exception e)
+            {
+                System.err.println("FAILUREB - Could not send HTTP GET Request: "+e.getMessage());
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }
