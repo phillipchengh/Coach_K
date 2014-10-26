@@ -9,4 +9,6 @@
     <string name="title_activity_maps">MapsActivity</string>
     <string name="title_activity_yelp">YelpActivity</string>
 
+    <string name="tracks8_playlists_selection_list">Tracks8PlaylistsListView</string>
+
 </resources>
