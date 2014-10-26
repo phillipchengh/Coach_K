@@ -76,8 +76,6 @@ public class Tracks8Activity extends Activity
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setRequestProperty("User-Agent", user_agent);
                 urlConnection.setDoInput(true);
-                int responseCode = urlConnection.getResponseCode();
-                System.out.println("Response Code: "+responseCode);
 
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                 System.out.println(readStream(in));
