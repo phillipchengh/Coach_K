@@ -1,7 +1,12 @@
 package com.coachksrun;
+import com.coachksrun.Tracks8.AsyncResponse;
+import com.coachksrun.Tracks8.InfoStruct;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -31,7 +36,7 @@ import java.net.HttpURLConnection;
 import org.json.JSONObject;
 import java.io.IOException;
 
-public class Tracks8Activity extends Activity
+public class Tracks8Activity extends Activity implements AsyncResponse
 {
     public static String DEV_KEY = "afe6602f9dfd8d5552dfa555feda9fab0a0a3643";
     public static String URL_HIP_HOP = "http://8tracks.com/mix_sets/tags:hip_hop:popular.json";
@@ -46,7 +51,7 @@ public class Tracks8Activity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracks8);
         GetPlaylists();
-
+        /*
         try
         {
             String[] params = {TEST_MIX_URL, username, password};
@@ -55,6 +60,24 @@ public class Tracks8Activity extends Activity
         catch(Exception e)
         {
              System.err.println("FAILURE: "+e.getMessage());
+        }
+        */
+    }
+
+    public void processFinish(String output)
+    {
+        try
+        {
+            MediaPlayer mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            Uri myUri = Uri.parse(output);
+            mediaPlayer.setDataSource(getApplicationContext(), myUri);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        }
+        catch(Exception e)
+        {
+            System.err.println("Failure instantiating Android MediaPlayer: "+e.getMessage());
         }
     }
 
@@ -110,6 +133,12 @@ public class Tracks8Activity extends Activity
 
     private class SetupPlaylists extends AsyncTask<URL, Void, JSONObject> {
         // NOTE: 8tracks calls playlists 'mixes'.
+        private AsyncResponse delegate = null;
+
+        public void setDelegate(AsyncResponse mainThread)
+        {
+            delegate = mainThread;
+        }
 
         protected JSONObject doInBackground(URL... params) {
             JSONObject json = null;
@@ -171,12 +200,13 @@ public class Tracks8Activity extends Activity
                     // User chose this; stream this mix!
                     String chosen_mix_id = mix_id_names.get(mix_names[position]);
                     System.out.println("Chosen id: " + chosen_mix_id);
+
+                    InfoStruct[] params = {(new InfoStruct(chosen_mix_id, delegate))};
+                    (new TalkTo8Tracks()).execute(params);
                 }
             };
             list_view.setOnItemClickListener(mixClickedHandler);
         }
-
-
     }
 
     private String readStream(InputStream is) throws IOException
@@ -191,8 +221,13 @@ public class Tracks8Activity extends Activity
         return sb.toString();
     }
 
-    private class TalkTo8Tracks extends AsyncTask<String, Void, Void> {
-        protected Void doInBackground(String... params) {
+    private class TalkTo8Tracks extends AsyncTask<InfoStruct, Void, String> {
+        public AsyncResponse delegate = null;
+
+        protected String doInBackground(InfoStruct... params) {
+            String ret_url = "";
+            delegate = params[0].getMainThread();
+
             try {
                 /*
                  * Testing HttpURLConnection
@@ -239,7 +274,8 @@ public class Tracks8Activity extends Activity
 
                 JSONObject reader = new JSONObject(readStream(in));
                 String play_token = reader.getString("play_token");
-                System.out.println("PLAY_TOKEN: " + play_token);
+                //System.out.println("PLAY_TOKEN: " + play_token);
+                ret_url = "http://8tracks.com/sets/"+play_token+"/play.json?mix_id="+params[0].getMixId();
                 urlConnection.disconnect();
             } catch (Exception e) {
                 System.err.println("FAILURE - Could not send HTTP GET Request: " + e.getMessage());
@@ -247,10 +283,14 @@ public class Tracks8Activity extends Activity
                 System.err.println("FAILURE: " + e.getMessage());
                 //e.printStackTrace();
             }
-            return null;
+            return ret_url;
+        }
+
+        protected void onPostExecute(String url)
+        {
+            delegate.processFinish(url);
         }
     }
-
 }
 
 
