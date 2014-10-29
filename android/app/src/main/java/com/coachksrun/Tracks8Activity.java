@@ -51,21 +51,11 @@ public class Tracks8Activity extends Activity implements AsyncResponse
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracks8);
         GetPlaylists();
-        /*
-        try
-        {
-            String[] params = {TEST_MIX_URL, username, password};
-            (new TalkTo8Tracks()).execute(params);
-        }
-        catch(Exception e)
-        {
-             System.err.println("FAILURE: "+e.getMessage());
-        }
-        */
     }
 
     public void processFinish(String output)
     {
+        System.out.println("OUTPUT: " + output);
         try
         {
             MediaPlayer mediaPlayer = new MediaPlayer();
@@ -92,7 +82,9 @@ public class Tracks8Activity extends Activity implements AsyncResponse
             return;
         }
         URL[] urls = {url};
-        (new SetupPlaylists()).execute(urls);
+        SetupPlaylists setupPlaylistsTask = new SetupPlaylists();
+        setupPlaylistsTask.setDelegate(this);
+        setupPlaylistsTask.execute(urls);
     }
 
 
@@ -201,6 +193,8 @@ public class Tracks8Activity extends Activity implements AsyncResponse
                     String chosen_mix_id = mix_id_names.get(mix_names[position]);
                     System.out.println("Chosen id: " + chosen_mix_id);
 
+                    System.out.println("SetupPlaylists: " + delegate.toString());
+
                     InfoStruct[] params = {(new InfoStruct(chosen_mix_id, delegate))};
                     (new TalkTo8Tracks()).execute(params);
                 }
@@ -221,43 +215,16 @@ public class Tracks8Activity extends Activity implements AsyncResponse
         return sb.toString();
     }
 
-    private class TalkTo8Tracks extends AsyncTask<InfoStruct, Void, String> {
+    private class TalkTo8Tracks extends AsyncTask<InfoStruct, Void, Void> {
         public AsyncResponse delegate = null;
 
-        protected String doInBackground(InfoStruct... params) {
+        protected Void doInBackground(InfoStruct... params) {
             String ret_url = "";
             delegate = params[0].getMainThread();
 
+            System.out.println("TalkTo8Tracks: " + delegate.toString());
+
             try {
-                /*
-                 * Testing HttpURLConnection
-                 *
-                 *
-                URL url = new URL(params[0]); // Assumes the URL params is an array of one url
-                String user_agent = System.getProperty("http.agent");
-
-                */
-
-                /*
-                 * Logging into 8 Track
-                 *
-                 *
-                URL url = new URL("https://8tracks.com/sessions.json?login="+params[1]+"&password="+params[2]+"&api_version=3");
-                String user_agent = System.getProperty("http.agent");
-
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setRequestProperty("User-Agent", user_agent);
-                urlConnection.setDoInput(true);
-
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                JSONObject reader = new JSONObject(readStream(in));
-                JSONObject user = reader.getJSONObject("user");
-                String user_token = user.getString("user_token");
-                urlConnection.disconnect();
-                */
-
                 /*
                  * Obtaining a Play Token
                  *
@@ -276,6 +243,7 @@ public class Tracks8Activity extends Activity implements AsyncResponse
                 String play_token = reader.getString("play_token");
                 //System.out.println("PLAY_TOKEN: " + play_token);
                 ret_url = "http://8tracks.com/sets/"+play_token+"/play.json?mix_id="+params[0].getMixId();
+
                 urlConnection.disconnect();
             } catch (Exception e) {
                 System.err.println("FAILURE - Could not send HTTP GET Request: " + e.getMessage());
@@ -283,14 +251,64 @@ public class Tracks8Activity extends Activity implements AsyncResponse
                 System.err.println("FAILURE: " + e.getMessage());
                 //e.printStackTrace();
             }
-            return ret_url;
-        }
-
-        protected void onPostExecute(String url)
-        {
-            delegate.processFinish(url);
+            InfoStruct[] get_stream_params = {(new InfoStruct(ret_url, delegate))};
+            (new PlayStream()).execute(get_stream_params);
+            return null;
         }
     }
+
+    private class PlayStream extends AsyncTask<InfoStruct, Void, JSONObject> {
+        public AsyncResponse delegate = null;
+
+        protected JSONObject doInBackground(InfoStruct... params) {
+            String url_string = params[0].getMixId();
+            delegate = params[0].getMainThread();
+
+            JSONObject json = null;
+            try {
+                URL url = new URL(url_string);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection = SetUp8tracks(urlConnection);
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                String response = readStream(in);
+
+                json = new JSONObject(response);
+                urlConnection.disconnect();
+            } catch (Exception e) {
+                System.err.println("FAILURE: " + e.getMessage());
+                //e.printStackTrace();
+            }
+
+            System.out.println("HELLO: " + json.toString());
+
+            return json;
+        }
+
+        protected void onPostExecute(JSONObject json) {
+            if (json == null) {
+                System.err.println("Couldn't get stream");
+                return;
+            }
+
+
+
+            // Get Ids and Names of mixes.
+            String streamUrl = null;
+            try {
+                JSONObject set = json.getJSONObject("set");
+                JSONObject track = set.getJSONObject("track");
+                streamUrl = track.getString("url");
+
+                System.out.println("STREAM URL: " + streamUrl);
+            } catch (Exception e) {
+                System.err.println("Malformed STREAM json: " + json.toString());
+                return;
+            }
+            delegate.processFinish(streamUrl);
+        }
+
+    }
+
 }
 
 
