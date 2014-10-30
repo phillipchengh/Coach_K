@@ -1,0 +1,31 @@
+{
+  "name": "CoachK",
+  "version": "1.0.0",
+  "description": "do you even lift",
+  "main": "app.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phillipchengh/Coach_K.git"
+  },
+  "keywords": [
+    "lift",
+    "run",
+    "nguyen"
+  ],
+  "author": "phillip",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/phillipchengh/Coach_K/issues"
+  },
+  "homepage": "https://github.com/phillipchengh/Coach_K",
+  "dependencies": {
+    "body-parser": "^1.9.2",
+    "dotenv": "^0.4.0",
+    "express": "^4.10.0",
+    "passport-facebook": "^1.0.3",
+    "pg": "^3.6.2"
+  }
+}
