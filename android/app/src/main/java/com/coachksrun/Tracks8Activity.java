@@ -13,9 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.AdapterView;
 import android.view.View;
 
@@ -26,14 +24,12 @@ import java.io.InputStreamReader;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
-import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import java.io.BufferedReader;
 import java.net.URL;
 import java.net.HttpURLConnection;
-import org.json.JSONObject;
 import java.io.IOException;
 
 public class Tracks8Activity extends Activity implements AsyncResponse
@@ -45,6 +41,10 @@ public class Tracks8Activity extends Activity implements AsyncResponse
     public static String username = "coach_k";
     public static String password = "coach_k";
 
+    public String g_play_token;
+    public String g_mix_id;
+    public MediaPlayer g_media_player = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -53,21 +53,63 @@ public class Tracks8Activity extends Activity implements AsyncResponse
         GetPlaylists();
     }
 
-    public void processFinish(String output)
+    /**
+     * Plays chosen track. On track completion should fetch next track if possible.
+     *
+     * TODO: Allow PLAY/PAUSE.
+     *
+     * @param stream_url The url string to stream from.
+     */
+    public void processFinish(String stream_url)
     {
-        System.out.println("OUTPUT: " + output);
         try
         {
-            MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            Uri myUri = Uri.parse(output);
-            mediaPlayer.setDataSource(getApplicationContext(), myUri);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
+            // Create MediaPlayer object for the first track or reuse it for the next track.
+            if (g_media_player == null)
+            {
+                g_media_player = new MediaPlayer();
+                g_media_player.setOnCompletionListener(new EndOfTrackListener(this));
+                g_media_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            }
+            else
+            {
+                g_media_player.reset();
+            }
+            Uri myUri = Uri.parse(stream_url);
+            g_media_player.setDataSource(getApplicationContext(), myUri);
+            g_media_player.prepare();
+            g_media_player.start();
         }
         catch(Exception e)
         {
             System.err.println("Failure instantiating Android MediaPlayer: "+e.getMessage());
+        }
+    }
+
+    public class EndOfTrackListener implements MediaPlayer.OnCompletionListener
+    {
+        private AsyncResponse delegate = null;
+
+        public EndOfTrackListener(AsyncResponse main_thread)
+        {
+            delegate = main_thread;
+        }
+
+        /**
+         * Current track has finished playing. Ask for next one.
+         *
+         * TODO: mix might be finished. Want to ask for next mix?
+         *
+         * @param mp
+         */
+        public void onCompletion(MediaPlayer mp)
+        {
+            // Asks for next track (a.k.a. stream).
+            // OR TODO: some async task gets tracks ahead of time and pushes onto a queue.
+            String next_track_url = String.format(
+                    "http://8tracks.com/sets/%s/next.json?mix_id=%s", g_play_token, g_mix_id);
+            InfoStruct[] get_stream_params = {(new InfoStruct(next_track_url, delegate))};
+            (new PlayStream()).execute(get_stream_params);
         }
     }
 
@@ -125,6 +167,7 @@ public class Tracks8Activity extends Activity implements AsyncResponse
 
     private class SetupPlaylists extends AsyncTask<URL, Void, JSONObject> {
         // NOTE: 8tracks calls playlists 'mixes'.
+
         private AsyncResponse delegate = null;
 
         public void setDelegate(AsyncResponse mainThread)
@@ -193,6 +236,8 @@ public class Tracks8Activity extends Activity implements AsyncResponse
                     String chosen_mix_id = mix_id_names.get(mix_names[position]);
                     System.out.println("Chosen id: " + chosen_mix_id);
 
+                    g_mix_id = chosen_mix_id;
+
                     System.out.println("SetupPlaylists: " + delegate.toString());
 
                     InfoStruct[] params = {(new InfoStruct(chosen_mix_id, delegate))};
@@ -241,6 +286,7 @@ public class Tracks8Activity extends Activity implements AsyncResponse
 
                 JSONObject reader = new JSONObject(readStream(in));
                 String play_token = reader.getString("play_token");
+                g_play_token = play_token;
                 //System.out.println("PLAY_TOKEN: " + play_token);
                 ret_url = "http://8tracks.com/sets/"+play_token+"/play.json?mix_id="+params[0].getMixId();
 
@@ -279,7 +325,7 @@ public class Tracks8Activity extends Activity implements AsyncResponse
                 //e.printStackTrace();
             }
 
-            System.out.println("HELLO: " + json.toString());
+            System.out.println("Mix Json object from 8tracks: " + json.toString());
 
             return json;
         }
@@ -289,8 +335,6 @@ public class Tracks8Activity extends Activity implements AsyncResponse
                 System.err.println("Couldn't get stream");
                 return;
             }
-
-
 
             // Get Ids and Names of mixes.
             String streamUrl = null;
