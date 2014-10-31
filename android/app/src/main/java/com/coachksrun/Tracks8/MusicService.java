@@ -28,27 +28,29 @@ import java.util.Map;
  */
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener
 {
-    private static final String ACTION_PLAY = "com.example.action.PLAY";
     MediaPlayer mMediaPlayer = null;
     String m_playToken;
     String m_mixID;
 
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
         m_playToken = intent.getStringExtra("PLAY_TOKEN");
         m_mixID = intent.getStringExtra("MIX_ID");
 
-        playStream(intent, null);
+        ServiceStruct[] params = {(new ServiceStruct(this, intent))};
+        (new PlayStream()).execute(params);
 
         return 0;
     }
 
     public void playStream(Intent intent, String uri_string)
     {
-        if (intent.getAction().equals(ACTION_PLAY)) {
+        if (intent.getAction().equals(utility.ACTION_PLAY)) {
             try
             {
-                if ( null == mMediaPlayer || null == uri_string)
+                if ( null == mMediaPlayer)
                 {
+                    System.out.println("Null media Player");
                     mMediaPlayer = new MediaPlayer();
                     mMediaPlayer.setOnCompletionListener(new EndOfTrackListener(this, intent));
                     mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -58,10 +60,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     mMediaPlayer.reset();
                 }
 
-                Uri myUri = Uri.parse(uri_string);
-
+                //Uri myUri = Uri.parse(uri_string);
                 mMediaPlayer.setOnPreparedListener(this);
-                mMediaPlayer.setDataSource(getApplicationContext(), myUri);
+                mMediaPlayer.setDataSource(uri_string);
                 mMediaPlayer.prepareAsync(); // prepare async to not block main thread
             }
             catch(Exception e)
@@ -77,11 +78,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     }
 
-    /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player)
     {
         player.start();
-
     }
 
     public class EndOfTrackListener implements MediaPlayer.OnCompletionListener

@@ -15,8 +15,8 @@ public class utility {
     public static String URL_HIP_HOP = "http://8tracks.com/mix_sets/tags:hip_hop:popular.json";
     public static int CAP_NUM_MIXES = 3;
     public static String TEST_MIX_URL = "http://8tracks.com/mixes/14.json?api_key="+DEV_KEY;
-    public static String username = "coach_k";
-    public static String password = "coach_k";
+
+    public static final String ACTION_PLAY = "com.example.action.PLAY";
 
     public static HttpURLConnection SetUp8tracks(HttpURLConnection urlConnection)
     {
