@@ -57,8 +57,6 @@ public class Tracks8Activity extends Activity implements AsyncResponse
      */
     public void processFinish(MainStruct stream_params)
     {
-        System.out.println("Running processFinish()");
-
         Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("PLAY_TOKEN", stream_params.getPlayToken());
         intent.putExtra("MIX_ID", stream_params.getMixId());

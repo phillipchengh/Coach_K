@@ -50,7 +50,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             {
                 if ( null == mMediaPlayer)
                 {
-                    System.out.println("Null media Player");
                     mMediaPlayer = new MediaPlayer();
                     mMediaPlayer.setOnCompletionListener(new EndOfTrackListener(this, intent));
                     mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
