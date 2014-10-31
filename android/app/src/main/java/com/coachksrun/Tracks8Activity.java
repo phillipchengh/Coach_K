@@ -6,6 +6,7 @@ import com.coachksrun.Tracks8.MusicService;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -33,6 +34,7 @@ import java.io.BufferedReader;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.io.IOException;
+
 
 public class Tracks8Activity extends Activity implements AsyncResponse
 {
@@ -128,11 +130,11 @@ public class Tracks8Activity extends Activity implements AsyncResponse
             System.out.println(mix_id_names);
 
             // Displays possible mix names to user.
-            // TODO(kristen): Change text color.
             final String[] mix_names = mix_id_names.keySet().toArray(new String[0]);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                     getApplicationContext(), android.R.layout.simple_list_item_1, mix_names);
             ListView list_view = (ListView) findViewById(R.id.tracks8_playlists_selection_list);
+            list_view.setBackgroundColor(Color.BLACK);
             list_view.setAdapter(adapter);
 
             // Gets chosen mix with id for streaming.
@@ -156,19 +158,45 @@ public class Tracks8Activity extends Activity implements AsyncResponse
     }
 
     private void GetPlaylists() {
-        // TODO(kristen): Let user choose genre. E.g. mix_%s_url % genre_tag?
-        URL url;
-        try {
-            url = new URL(utility.URL_HIP_HOP);
-        }
-        catch (Exception e) {
-            System.err.println("Couldn't form url object: " + e.getMessage());
-            return;
-        }
-        URL[] urls = {url};
-        SetupPlaylists setupPlaylistsTask = new SetupPlaylists();
-        setupPlaylistsTask.setDelegate(this);
-        setupPlaylistsTask.execute(urls);
+        // Let user choose genre.
+        final Map<String, String> genre_name_to_tag = new HashMap<String, String>();
+        genre_name_to_tag.put("Hip hop", "hip_hop");
+        genre_name_to_tag.put("Electronic", "electronic");
+        genre_name_to_tag.put("Workout", "workout");
+        genre_name_to_tag.put("Rock", "rock");
+
+        final String[] genre_tags = genre_name_to_tag.keySet().toArray(new String[0]);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                getApplicationContext(), android.R.layout.simple_list_item_1, genre_tags);
+        ListView list_view = (ListView) findViewById(R.id.tracks8_playlists_selection_list);
+        list_view.setBackgroundColor(Color.BLACK);
+        list_view.setAdapter(adapter);
+
+        final AsyncResponse mainThread = this;
+        // Gets chosen genre tag.
+        AdapterView.OnItemClickListener genreClickedHandler = new AdapterView
+                .OnItemClickListener() {
+            public void onItemClick(AdapterView parent, View v, int position, long id) {
+                // User chose this; stream this mix!
+                String chosen_tag = genre_name_to_tag.get(genre_tags[position]);
+                System.out.println("Chosen genre tag: " + chosen_tag);
+                String genre_url = String.format(utility.URL_GENRE, chosen_tag);
+
+                URL url;
+                try {
+                    url = new URL(genre_url);
+                }
+                catch (Exception e) {
+                    System.err.println("Couldn't form url object: " + e.getMessage());
+                    return;
+                }
+                URL[] urls = {url};
+                SetupPlaylists setupPlaylistsTask = new SetupPlaylists();
+                setupPlaylistsTask.setDelegate(mainThread);
+                setupPlaylistsTask.execute(urls);
+            }
+        };
+        list_view.setOnItemClickListener(genreClickedHandler);
     }
 
 

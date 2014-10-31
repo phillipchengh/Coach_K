@@ -23,9 +23,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by kevin on 10/30/14.
- */
+
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener
 {
     MediaPlayer mMediaPlayer = null;

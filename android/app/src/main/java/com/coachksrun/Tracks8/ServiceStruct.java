@@ -2,9 +2,7 @@ package com.coachksrun.Tracks8;
 
 import android.content.Intent;
 
-/**
- * Created by kevin on 10/30/14.
- */
+
 public class ServiceStruct
 {
     private MusicService m_serviceThread = null;

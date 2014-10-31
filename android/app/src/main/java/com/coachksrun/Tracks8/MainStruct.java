@@ -1,8 +1,6 @@
 package com.coachksrun.Tracks8;
 
-/**
- * Created by kevin on 10/30/14.
- */
+
 public class MainStruct
 {
     private String m_mixId = null;
