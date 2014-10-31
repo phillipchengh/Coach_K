@@ -1,4 +1,0 @@
-DROP DATABASE IF EXISTS coachk;
-
-CREATE DATABASE coachk
-  WITH OWNER phillip;
