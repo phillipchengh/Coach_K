@@ -5,5 +5,5 @@ package com.coachksrun.Tracks8;
  */
 public interface AsyncResponse
 {
-    void processFinish(String output);
+    void processFinish(MainStruct stream_params);
 }
