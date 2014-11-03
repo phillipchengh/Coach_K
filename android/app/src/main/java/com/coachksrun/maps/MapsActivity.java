@@ -37,6 +37,9 @@ public class MapsActivity extends Activity {
             GoogleMap map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
                     .getMap();
 
+            MapStatsFragment mapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
+            mapStats.setSpeed(0.0f);
+
             if (map!=null){
                 Marker currentMarker = map.addMarker(new MarkerOptions()
                         .position(currentLocation)
@@ -62,6 +65,8 @@ public class MapsActivity extends Activity {
                 // Zoom in, animating the camera.
                 map.animateCamera(CameraUpdateFactory.zoomTo(18), 2000, null);
             }
+
+
         }
     }
 
