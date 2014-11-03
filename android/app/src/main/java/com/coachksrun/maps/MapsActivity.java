@@ -21,24 +21,46 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends Activity {
+
+    private static final int MS_TO_UPDATE = 1000;
+    private MapStatsFragment mMapStats;
+    private GPSTracker mGPS;
+    private Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            while (true) {
+                try {
+                    Thread.sleep(MS_TO_UPDATE);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mMapStats.setSpeed(mGPS.getSpeed()); // TODO: Check if mGPS.getSpeed() actually works
+                    }
+                });
+
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
         // Create a new GPS tracker to get the current coordinates
-        GPSTracker gps = new GPSTracker(this);
-        if(gps.canGetLocation()){
+        mGPS = new GPSTracker(this);
+        if(mGPS.canGetLocation()){
             // Final variables for access in nested function
-            final double currentLatitude = gps.getLatitude();
-            final double currentLongitude = gps.getLongitude();
+            final double currentLatitude = mGPS.getLatitude();
+            final double currentLongitude = mGPS.getLongitude();
             LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
 
             GoogleMap map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
                     .getMap();
 
-            MapStatsFragment mapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
-            mapStats.setSpeed(0.0f);
+            mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
 
             if (map!=null){
                 Marker currentMarker = map.addMarker(new MarkerOptions()
@@ -52,7 +74,7 @@ public class MapsActivity extends Activity {
                         String uri = "http://maps.google.com/maps?saddr=" +
                                 currentLatitude + "," + currentLongitude +
                                 "&daddr=" + latLng.latitude + "," + latLng.longitude;
-                        Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                         intent.setClassName("com.google.android.apps.maps",
                                 "com.google.android.maps.MapsActivity");
                         startActivity(intent);
@@ -66,7 +88,8 @@ public class MapsActivity extends Activity {
                 map.animateCamera(CameraUpdateFactory.zoomTo(18), 2000, null);
             }
 
-
+            Thread mapStatsThread = new Thread(mUpdateTimeTask);
+            mapStatsThread.start();
         }
     }
 
