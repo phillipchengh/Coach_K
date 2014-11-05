@@ -21,7 +21,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends Activity {
-
+    private GoogleMap map;
     private static final int MS_TO_UPDATE = 1000;
     private MapStatsFragment mMapStats;
     private GPSTracker mGPS;
@@ -29,6 +29,11 @@ public class MapsActivity extends Activity {
         public void run() {
             while (true) {
                 try {
+                    mGPS.update();
+                    final double currentLatitude = mGPS.getLatitude();
+                    final double currentLongitude = mGPS.getLongitude();
+                    LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
                     Thread.sleep(MS_TO_UPDATE);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -57,7 +62,7 @@ public class MapsActivity extends Activity {
             final double currentLongitude = mGPS.getLongitude();
             LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
 
-            GoogleMap map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+            map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
                     .getMap();
 
             mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
