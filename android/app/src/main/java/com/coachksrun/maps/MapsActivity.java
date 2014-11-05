@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends Activity {
     private GoogleMap map;
+    private Marker currentMarker;
     private static final int MS_TO_UPDATE = 1000;
     private MapStatsFragment mMapStats;
     private GPSTracker mGPS;
@@ -29,11 +30,18 @@ public class MapsActivity extends Activity {
         public void run() {
             while (true) {
                 try {
-                    mGPS.update();
+
+                    /*
+                    mGPS.getLocation();
                     final double currentLatitude = mGPS.getLatitude();
                     final double currentLongitude = mGPS.getLongitude();
                     LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+                    //map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+
+                    if (map != null && currentMarker != null)
+                        currentMarker.setPosition(currentLocation);
+                    */
+
                     Thread.sleep(MS_TO_UPDATE);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -41,7 +49,19 @@ public class MapsActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mMapStats.setSpeed(mGPS.getSpeed()); // TODO: Check if mGPS.getSpeed() actually works
+                        //mMapStats.setSpeed(mGPS.getSpeed()); // TODO: Check if mGPS.getSpeed() actually works
+                        String status = mGPS.getLatitude() + ", " + mGPS.getLongitude() + ": " + mGPS.getSpeed() + " mph";
+                        mMapStats.setSpeed(status); // TODO: Check if mGPS.getSpeed() actually works
+
+
+                        //mGPS.getLocation();
+                        final double currentLatitude = mGPS.getLatitude();
+                        final double currentLongitude = mGPS.getLongitude();
+                        LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
+                        //map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+
+                        if (map != null && currentMarker != null)
+                            currentMarker.setPosition(currentLocation);
                     }
                 });
 
@@ -68,7 +88,7 @@ public class MapsActivity extends Activity {
             mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
 
             if (map!=null){
-                Marker currentMarker = map.addMarker(new MarkerOptions()
+                currentMarker = map.addMarker(new MarkerOptions()
                         .position(currentLocation)
                         .title("Current Location"));
 
