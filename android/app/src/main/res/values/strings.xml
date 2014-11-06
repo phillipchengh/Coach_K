@@ -10,5 +10,6 @@
     <string name="title_activity_yelp">YelpActivity</string>
 
     <string name="tracks8_playlists_selection_list">Tracks8PlaylistsListView</string>
-
+    <string name="tracks8_pause">Pause</string>
+    <string name="tracks8_next">Next</string>
 </resources>

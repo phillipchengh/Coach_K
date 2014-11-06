@@ -1,6 +1,10 @@
 package com.coachksrun.Tracks8;
+import com.coachksrun.Tracks8.utility;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -17,12 +21,28 @@ import java.net.URL;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener
 {
-    MediaPlayer mMediaPlayer = null;
     String m_playToken;
     String m_mixID;
 
+    MusicService_BroadcastReceiver broadcast_manager;
+
+    private class MusicService_BroadcastReceiver extends BroadcastReceiver
+    {
+
+        public void onReceive(Context context, Intent intent)
+        {
+
+            utility.mediaPlayer.stop();
+
+        }
+    }
+
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+        IntentFilter broadcast_mgr_intent_filter = new IntentFilter();
+        broadcast_mgr_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
+        this.registerReceiver(new MusicService_BroadcastReceiver(), broadcast_mgr_intent_filter);
+
         m_playToken = intent.getStringExtra("PLAY_TOKEN");
         m_mixID = intent.getStringExtra("MIX_ID");
 
@@ -37,21 +57,21 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (intent.getAction().equals(utility.ACTION_PLAY)) {
             try
             {
-                if ( null == mMediaPlayer)
+                if ( null == utility.mediaPlayer)
                 {
-                    mMediaPlayer = new MediaPlayer();
-                    mMediaPlayer.setOnCompletionListener(new EndOfTrackListener(this, intent));
-                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    utility.mediaPlayer = new MediaPlayer();
+                    utility.mediaPlayer.setOnCompletionListener(new EndOfTrackListener(this, intent));
+                    utility.mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 }
                 else
                 {
-                    mMediaPlayer.reset();
+                    utility.mediaPlayer.reset();
                 }
 
                 //Uri myUri = Uri.parse(uri_string);
-                mMediaPlayer.setOnPreparedListener(this);
-                mMediaPlayer.setDataSource(uri_string);
-                mMediaPlayer.prepareAsync(); // prepare async to not block main thread
+                utility.mediaPlayer.setOnPreparedListener(this);
+                utility.mediaPlayer.setDataSource(uri_string);
+                utility.mediaPlayer.prepareAsync(); // prepare async to not block main thread
             }
             catch(Exception e)
             {
@@ -97,6 +117,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             (new PlayStream()).execute(params);
         }
     }
+
 
     private class PlayStream extends AsyncTask<ServiceStruct, Void, JSONObject> {
         public MusicService delegate = null;

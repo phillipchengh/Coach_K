@@ -1,5 +1,7 @@
 package com.coachksrun.Tracks8;
 
+import android.media.MediaPlayer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,11 +11,14 @@ import java.net.HttpURLConnection;
 
 public class utility {
 
+    public static MediaPlayer mediaPlayer;
+
     public static String DEV_KEY = "afe6602f9dfd8d5552dfa555feda9fab0a0a3643";
     public static String URL_GENRE = "http://8tracks.com/mix_sets/tags:%s:popular.json";
     public static int CAP_NUM_MIXES = 3;
 
     public static String MIX_ID_PLAY_TOKEN_ACTION = "com.coachksrun.action.GET_MIX_ID_PLAY_TOKEN";
+    public static String SKIP_SONG_ACTION = "com.coachksrun.action.SKIP_SONG";
 
     public static final String ACTION_PLAY = "com.example.action.PLAY";
 
@@ -49,4 +54,5 @@ public class utility {
         is.close();
         return sb.toString();
     }
+
 }

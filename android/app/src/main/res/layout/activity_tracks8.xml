@@ -8,22 +8,41 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.coachksrun.Tracks8Activity">
 
-    <TextView
-        android:text="@string/hello_world"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView" />
-
-    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/tracks8_playlists_selection_list"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:columnWidth="90dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center"
-        />
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/tracks8_playlists_selection_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnWidth="90dp"
+            android:numColumns="auto_fit"
+            android:verticalSpacing="10dp"
+            android:horizontalSpacing="10dp"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            />
+
+        <Button
+            android:id="@+id/button_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="@string/tracks8_pause"
+            android:onClick="pauseClicked" />
+
+        <Button
+            android:id="@+id/button_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="@string/tracks8_next"
+            android:onClick="skipClicked_stupid" />
+
+    </LinearLayout>
+
+
 
 </RelativeLayout>

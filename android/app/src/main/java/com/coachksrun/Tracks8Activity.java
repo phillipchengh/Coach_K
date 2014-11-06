@@ -38,6 +38,7 @@ public class Tracks8Activity extends Activity
     public String g_mix_id;
     public MediaPlayer g_media_player = null;
     private LocalBroadcastManager g_broadcast_manager = null;
+    public MusicService m_music_service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -263,6 +264,57 @@ public class Tracks8Activity extends Activity
             System.err.println("Exception in processFinish(): "+e.getMessage());
         }
     }
+
+
+    /**
+     * Respond to Pause button click event.
+     */
+    public void pauseClicked(View view) {
+        if (null != utility.mediaPlayer) {
+            if (utility.mediaPlayer.isPlaying())
+            {
+                utility.mediaPlayer.pause();
+            }
+            else
+            {
+                utility.mediaPlayer.start();
+            }
+
+         }
+    }
+
+    /**
+     * Respond to Skip button click event.
+     */
+    public void skipClicked(View view) {
+        if (null != utility.mediaPlayer) {
+            if (utility.mediaPlayer.isPlaying())
+            {
+                // broadcast to service to skip current song.
+                Intent got_play_token_intent = new Intent();
+                got_play_token_intent.setAction(utility.SKIP_SONG_ACTION);
+                g_broadcast_manager.sendBroadcast(got_play_token_intent);
+            }
+
+        }
+    }
+
+    /**
+     * Respond to Skip button click event.
+     */
+    public void skipClicked_stupid(View view) {
+        if (null != utility.mediaPlayer) {
+            if (utility.mediaPlayer.isPlaying())
+            {
+                utility.mediaPlayer.stop();
+
+
+            }
+
+        }
+    }
+
+
 
 
     @Override
