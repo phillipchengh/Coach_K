@@ -19,6 +19,9 @@ import android.provider.Settings;
 import android.util.Log;
 
 public class GPSTracker extends Service implements LocationListener {
+
+    private static final double MPS_TO_MPH = 2.23694;
+
     private final Context mContext;
 
     // flag for GPS status
@@ -46,6 +49,11 @@ public class GPSTracker extends Service implements LocationListener {
     public GPSTracker(Context context) {
         this.mContext = context;
         getLocation();
+    }
+
+    public void update() {
+        location = locationManager
+                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
     public Location getLocation() {
@@ -201,6 +209,14 @@ public class GPSTracker extends Service implements LocationListener {
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
+    }
+
+    public float getSpeed() {
+        float speed = location.getSpeed();
+
+        // Convert meters per second to miles per hour
+        speed = speed * (float) MPS_TO_MPH;
+        return speed;
     }
 
 }
