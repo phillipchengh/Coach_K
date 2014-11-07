@@ -4,13 +4,16 @@ import com.coachksrun.Tracks8.utility;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,11 +37,11 @@ import java.net.HttpURLConnection;
 
 public class Tracks8Activity extends Activity
 {
-    public String g_play_token;
-    public String g_mix_id;
+    public String g_play_token = null;
+    public String g_mix_id = null;
     public MediaPlayer g_media_player = null;
     private LocalBroadcastManager g_broadcast_manager = null;
-    public MusicService m_music_service;
+    public MusicService m_MusicService = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -250,6 +253,8 @@ public class Tracks8Activity extends Activity
      */
     public void StartMusicService(String play_token, String mix_id)
     {
+        g_play_token = play_token;
+        g_mix_id = mix_id;
         Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("PLAY_TOKEN", play_token);
         intent.putExtra("MIX_ID", mix_id);
@@ -258,13 +263,26 @@ public class Tracks8Activity extends Activity
         try
         {
             this.startService(intent);
+            ServiceConnection serviceConn = new ServiceConnection() {
+
+                public void onServiceConnected(ComponentName className,
+                                               IBinder binder) {
+                    MusicService.LocalBinder serviceBinder = (MusicService.LocalBinder) binder;
+                    m_MusicService = serviceBinder.getService();
+                }
+
+                public void onServiceDisconnected(ComponentName className) {
+                    m_MusicService = null;
+                }
+            };
+
+            bindService(intent, serviceConn,Context.BIND_AUTO_CREATE);
         }
         catch(Exception e)
         {
             System.err.println("Exception in processFinish(): "+e.getMessage());
         }
     }
-
 
     /**
      * Respond to Pause button click event.
@@ -304,18 +322,18 @@ public class Tracks8Activity extends Activity
      */
     public void skipClicked_stupid(View view) {
         if (null != utility.mediaPlayer) {
-            if (utility.mediaPlayer.isPlaying())
+            if (utility.mediaPlayer.isPlaying() && null != m_MusicService)
             {
-                utility.mediaPlayer.stop();
-
-
+                //utility.mediaPlayer.stop();
+                //(new SkipTrack()).execute();
+                m_MusicService.skipTrack();
             }
-
+            else
+            {
+                System.err.println("Skip Track Error: Either MediaPlayer is not playing or MusicService has NOT started");
+            }
         }
     }
-
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

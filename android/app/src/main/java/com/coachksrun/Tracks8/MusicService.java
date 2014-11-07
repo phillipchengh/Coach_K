@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.IBinder;
 import android.media.AudioManager;
 
@@ -21,24 +22,32 @@ import java.net.URL;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener
 {
-    String m_playToken;
-    String m_mixID;
+    private String m_playToken;
+    private String m_mixID;
+    private Intent m_intent;
+
+    private final IBinder m_Binder = new LocalBinder();
 
     MusicService_BroadcastReceiver broadcast_manager;
+
+    public void skipTrack()
+    {
+        (new SkipTrack_Task()).execute();
+    }
 
     private class MusicService_BroadcastReceiver extends BroadcastReceiver
     {
 
         public void onReceive(Context context, Intent intent)
         {
-
             utility.mediaPlayer.stop();
-
         }
     }
 
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+        m_intent = intent;
+
         IntentFilter broadcast_mgr_intent_filter = new IntentFilter();
         broadcast_mgr_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
         this.registerReceiver(new MusicService_BroadcastReceiver(), broadcast_mgr_intent_filter);
@@ -80,10 +89,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     }
 
+    public class LocalBinder extends Binder
+    {
+        public MusicService getService()
+        {
+            return MusicService.this;
+        }
+    }
+
     public IBinder onBind(Intent intent)
     {
-        return null;
-
+        return m_Binder;
     }
 
     public void onPrepared(MediaPlayer player)
@@ -167,6 +183,74 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
 
             delegate.playStream(intent, streamUrl);
+        }
+    }
+
+    private class SkipTrack_Task extends AsyncTask<Void, Void, String>
+    {
+        private String skip_url = "http://8tracks.com/sets/111696185/skip.json?mix_id=14";
+        protected String doInBackground(Void... param)
+        {
+            String response = null;
+
+            if( null == m_playToken || null == m_mixID )
+            {
+                System.err.println("g_variables not set");
+                return null;
+            }
+
+            String skip_url="http://8tracks.com/sets/"+m_playToken+"/skip.json?mix_id="+m_mixID;
+            try
+            {
+                URL url = new URL(skip_url);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection = utility.SetUp8tracks(urlConnection);
+                urlConnection.setRequestMethod("POST");
+
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                response = utility.readStream(in);
+                System.out.println(response);
+                urlConnection.disconnect();
+            } catch (Exception e) {
+                System.err.println("FAILURE - AsyncTask for skipping track: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            return response;
+        }
+
+        protected void onPostExecute(String response)
+        {
+            if( null == response )
+            {
+                System.out.println("Did not get Skip Track response");
+                return;
+            }
+
+            System.out.println("Response is :"+response);
+
+            try
+            {
+                JSONObject json = new JSONObject(response);
+
+                String status = json.getString("status");
+
+                if( status.equals("200 OK") )
+                {
+                    JSONObject set = json.getJSONObject("set");
+                    JSONObject track = set.getJSONObject("track");
+                    String streamUrl = track.getString("url");
+
+                    playStream(m_intent, streamUrl);
+                }
+                else {
+                    System.err.println("SKIP REQUEST FAILED: " + status);
+                }
+            }
+            catch(Exception e)
+            {
+                System.err.println("Exception parsing JSON");
+            }
         }
     }
 }

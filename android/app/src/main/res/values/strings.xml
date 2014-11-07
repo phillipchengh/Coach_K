@@ -11,6 +11,6 @@
     <string name="tracks8_playlists_selection_list">Tracks8PlaylistsListView</string>
 
     <string name="tracks8_pause">Pause</string>
-    <string name="tracks8_next">Next</string>
+    <string name="tracks8_next">Skip</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
