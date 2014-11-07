@@ -12,6 +12,7 @@ import java.net.HttpURLConnection;
 public class utility {
 
     public static MediaPlayer mediaPlayer;
+    public static boolean isPaused = false;
 
     public static String DEV_KEY = "afe6602f9dfd8d5552dfa555feda9fab0a0a3643";
     public static String URL_GENRE = "http://8tracks.com/mix_sets/tags:%s:popular.json";

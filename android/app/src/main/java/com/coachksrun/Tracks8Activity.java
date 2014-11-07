@@ -292,10 +292,12 @@ public class Tracks8Activity extends Activity
             if (utility.mediaPlayer.isPlaying())
             {
                 utility.mediaPlayer.pause();
+                utility.isPaused = true;
             }
             else
             {
                 utility.mediaPlayer.start();
+                utility.isPaused = false;
             }
 
          }
@@ -322,7 +324,7 @@ public class Tracks8Activity extends Activity
      */
     public void skipClicked_stupid(View view) {
         if (null != utility.mediaPlayer) {
-            if (utility.mediaPlayer.isPlaying() && null != m_MusicService)
+            if ( ( utility.mediaPlayer.isPlaying() || utility.isPaused ) && null != m_MusicService)
             {
                 //utility.mediaPlayer.stop();
                 //(new SkipTrack()).execute();
