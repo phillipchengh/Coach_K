@@ -22,25 +22,50 @@ import java.net.URL;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener
 {
-    private String m_playToken;
-    private String m_mixID;
-    private Intent m_intent;
-
+    private String m_playToken = null;
+    private String m_mixID = null;
+    private Intent m_intent = null;
+    private MediaPlayer m_mediaPlayer = null;
+    private boolean isPaused = false;
     private final IBinder m_Binder = new LocalBinder();
 
     MusicService_BroadcastReceiver broadcast_manager;
 
+    public void pauseTrack()
+    {
+        if (null != m_mediaPlayer) {
+            if (m_mediaPlayer.isPlaying())
+            {
+                m_mediaPlayer.pause();
+                isPaused = true;
+            }
+            else
+            {
+                m_mediaPlayer.start();
+                isPaused = false;
+            }
+        }
+    }
+
     public void skipTrack()
     {
-        (new SkipTrack_Task()).execute();
+        if (null != m_mediaPlayer) {
+            if ( m_mediaPlayer.isPlaying() || isPaused )
+            {
+                (new SkipTrack_Task()).execute();
+            }
+            else
+            {
+                System.err.println("Skip Track Error: Either MediaPlayer is not playing or MusicService has NOT started");
+            }
+        }
     }
 
     private class MusicService_BroadcastReceiver extends BroadcastReceiver
     {
-
         public void onReceive(Context context, Intent intent)
         {
-            utility.mediaPlayer.stop();
+            m_mediaPlayer.stop();
         }
     }
 
@@ -55,32 +80,31 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         m_playToken = intent.getStringExtra("PLAY_TOKEN");
         m_mixID = intent.getStringExtra("MIX_ID");
 
-        ServiceStruct[] params = {(new ServiceStruct(this, intent))};
-        (new PlayStream()).execute(params);
+        (new PlayStream()).execute(this);
 
         return 0;
     }
 
-    public void playStream(Intent intent, String uri_string)
+    public void playStream(String uri_string)
     {
-        if (intent.getAction().equals(utility.ACTION_PLAY)) {
+        if (m_intent.getAction().equals(utility.ACTION_PLAY)) {
             try
             {
-                if ( null == utility.mediaPlayer)
+                if ( null == m_mediaPlayer)
                 {
-                    utility.mediaPlayer = new MediaPlayer();
-                    utility.mediaPlayer.setOnCompletionListener(new EndOfTrackListener(this, intent));
-                    utility.mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    m_mediaPlayer = new MediaPlayer();
+                    m_mediaPlayer.setOnCompletionListener(new EndOfTrackListener(this));
+                    m_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 }
                 else
                 {
-                    utility.mediaPlayer.reset();
+                    m_mediaPlayer.reset();
                 }
 
                 //Uri myUri = Uri.parse(uri_string);
-                utility.mediaPlayer.setOnPreparedListener(this);
-                utility.mediaPlayer.setDataSource(uri_string);
-                utility.mediaPlayer.prepareAsync(); // prepare async to not block main thread
+                m_mediaPlayer.setOnPreparedListener(this);
+                m_mediaPlayer.setDataSource(uri_string);
+                m_mediaPlayer.prepareAsync(); // prepare async to not block main thread
             }
             catch(Exception e)
             {
@@ -110,12 +134,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public class EndOfTrackListener implements MediaPlayer.OnCompletionListener
     {
         private MusicService m_delegate = null;
-        private Intent m_intent = null;
 
-        public EndOfTrackListener(MusicService service_thread, Intent intent)
+        public EndOfTrackListener(MusicService service_thread)
         {
             m_delegate = service_thread;
-            m_intent = intent;
         }
 
         /**
@@ -129,19 +151,15 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         {
             // Asks for next track (a.k.a. stream).
             // OR TODO: some async task gets tracks ahead of time and pushes onto a queue.
-            ServiceStruct[] params = {(new ServiceStruct(m_delegate, m_intent))};
-            (new PlayStream()).execute(params);
+            (new PlayStream()).execute(m_delegate);
         }
     }
 
-
-    private class PlayStream extends AsyncTask<ServiceStruct, Void, JSONObject> {
+    private class PlayStream extends AsyncTask<MusicService, Void, JSONObject> {
         public MusicService delegate = null;
-        public Intent intent = null;
 
-        protected JSONObject doInBackground(ServiceStruct... params) {
-            delegate = params[0].getServiceThread();
-            intent = params[0].getIntent();
+        protected JSONObject doInBackground(MusicService... params) {
+            delegate = params[0];
 
             JSONObject json = null;
             try {
@@ -182,7 +200,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 return;
             }
 
-            delegate.playStream(intent, streamUrl);
+            delegate.playStream(streamUrl);
         }
     }
 
@@ -241,7 +259,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     JSONObject track = set.getJSONObject("track");
                     String streamUrl = track.getString("url");
 
-                    playStream(m_intent, streamUrl);
+                    playStream(streamUrl);
                 }
                 else {
                     System.err.println("SKIP REQUEST FAILED: " + status);

@@ -39,9 +39,10 @@ public class Tracks8Activity extends Activity
 {
     public String g_play_token = null;
     public String g_mix_id = null;
-    public MediaPlayer g_media_player = null;
+    //public MediaPlayer g_media_player = null;
     private LocalBroadcastManager g_broadcast_manager = null;
-    public MusicService m_MusicService = null;
+    private MusicService m_MusicService = null;
+    private boolean m_bound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -240,10 +241,8 @@ public class Tracks8Activity extends Activity
 
             // Finally have both play token and mix id, so can start music service.
             StartMusicService(play_token, mix_id);
-
         }
     }
-
 
     /**
      * Plays chosen track. On track completion should fetch next track if possible.
@@ -265,14 +264,16 @@ public class Tracks8Activity extends Activity
             this.startService(intent);
             ServiceConnection serviceConn = new ServiceConnection() {
 
-                public void onServiceConnected(ComponentName className,
-                                               IBinder binder) {
+                public void onServiceConnected(ComponentName className, IBinder binder)
+                {
                     MusicService.LocalBinder serviceBinder = (MusicService.LocalBinder) binder;
                     m_MusicService = serviceBinder.getService();
+                    m_bound = true;
                 }
 
                 public void onServiceDisconnected(ComponentName className) {
                     m_MusicService = null;
+                    m_bound = false;
                 }
             };
 
@@ -287,53 +288,22 @@ public class Tracks8Activity extends Activity
     /**
      * Respond to Pause button click event.
      */
-    public void pauseClicked(View view) {
-        if (null != utility.mediaPlayer) {
-            if (utility.mediaPlayer.isPlaying())
-            {
-                utility.mediaPlayer.pause();
-                utility.isPaused = true;
-            }
-            else
-            {
-                utility.mediaPlayer.start();
-                utility.isPaused = false;
-            }
-
-         }
-    }
-
-    /**
-     * Respond to Skip button click event.
-     */
-    public void skipClicked(View view) {
-        if (null != utility.mediaPlayer) {
-            if (utility.mediaPlayer.isPlaying())
-            {
-                // broadcast to service to skip current song.
-                Intent got_play_token_intent = new Intent();
-                got_play_token_intent.setAction(utility.SKIP_SONG_ACTION);
-                g_broadcast_manager.sendBroadcast(got_play_token_intent);
-            }
-
+    public void pauseClicked(View view)
+    {
+        if( m_bound )
+        {
+            m_MusicService.pauseTrack();
         }
     }
 
     /**
      * Respond to Skip button click event.
      */
-    public void skipClicked_stupid(View view) {
-        if (null != utility.mediaPlayer) {
-            if ( ( utility.mediaPlayer.isPlaying() || utility.isPaused ) && null != m_MusicService)
-            {
-                //utility.mediaPlayer.stop();
-                //(new SkipTrack()).execute();
-                m_MusicService.skipTrack();
-            }
-            else
-            {
-                System.err.println("Skip Track Error: Either MediaPlayer is not playing or MusicService has NOT started");
-            }
+    public void skipClicked_stupid(View view)
+    {
+        if( m_bound )
+        {
+            m_MusicService.skipTrack();
         }
     }
 
@@ -356,5 +326,3 @@ public class Tracks8Activity extends Activity
         return super.onOptionsItemSelected(item);
     }
 }
-
-
