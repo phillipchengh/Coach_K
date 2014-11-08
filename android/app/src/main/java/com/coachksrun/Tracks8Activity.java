@@ -295,6 +295,14 @@ public class Tracks8Activity extends Activity
         }
     }
 
+    public void skipClicked(View view)
+    {
+        if( m_bound )
+        {
+            m_MusicService.skipTrack();
+        }
+    }
+
     /**
      * Respond to Stop button click event.
      */
@@ -302,7 +310,7 @@ public class Tracks8Activity extends Activity
     {
         if( m_bound )
         {
-	    finish();
+	        finish();
         }
     }
 
@@ -311,12 +319,17 @@ public class Tracks8Activity extends Activity
      */
     public void onDestroy() 
     {
-	if (null != m_MusicService) 
-	{
+        while( false == m_bound )
+        {
+        }
+
+	    if (null != m_MusicService)
+	    {
             m_MusicService.releaseMediaPlayer();
-	    m_MusicService.stopService(new Intent(this, MusicService.class));
-	}
-	super.onDestroy();
+	        m_MusicService.stopService(new Intent(this, MusicService.class));
+	        m_MusicService = null;
+        }
+	    super.onDestroy();
     }
 
     @Override
