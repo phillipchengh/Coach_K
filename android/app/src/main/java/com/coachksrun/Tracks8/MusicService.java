@@ -1,4 +1,5 @@
 package com.coachksrun.Tracks8;
+import com.coachksrun.R;
 import com.coachksrun.Tracks8.utility;
 
 import android.app.Service;
@@ -11,6 +12,9 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.media.AudioManager;
+import android.support.v4.content.LocalBroadcastManager;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -29,6 +33,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private boolean isPaused = false;
     private final IBinder m_Binder = new LocalBinder();
 
+    private LocalBroadcastManager m_broadcast_manager = null;
     MusicService_BroadcastReceiver broadcast_manager;
 
     public void pauseTrack()
@@ -80,6 +85,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         m_intent = intent;
+	m_broadcast_manager = LocalBroadcastManager.getInstance(
+				getApplicationContext());
 
         IntentFilter broadcast_mgr_intent_filter = new IntentFilter();
         broadcast_mgr_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
@@ -201,8 +208,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 JSONObject set = json.getJSONObject("set");
                 JSONObject track = set.getJSONObject("track");
                 streamUrl = track.getString("url");
-
                 System.out.println("STREAM URL: " + streamUrl);
+
+		tellActivityTrackName(track.getString("name"));
             } catch (Exception e) {
                 System.err.println("Malformed STREAM json: " + json.toString());
                 return;
@@ -267,6 +275,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     JSONObject track = set.getJSONObject("track");
                     String streamUrl = track.getString("url");
 
+		    tellActivityTrackName(track.getString("name"));
+
                     playStream(streamUrl);
                 }
                 else {
@@ -278,5 +288,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 System.err.println("Exception parsing JSON");
             }
         }
+    }
+
+    private void tellActivityTrackName(String track_name)
+    {
+	Intent send_trackname_intent = new Intent();
+	send_trackname_intent.setAction(utility.TRACK_NAME_ACTION);
+	send_trackname_intent.putExtra("track_name", track_name);
+	m_broadcast_manager.sendBroadcast(send_trackname_intent);
     }
 }
