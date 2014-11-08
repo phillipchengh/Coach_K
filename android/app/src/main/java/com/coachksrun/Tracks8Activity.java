@@ -44,7 +44,11 @@ public class Tracks8Activity extends Activity
     public String g_mix_id = null;
     private LocalBroadcastManager g_broadcast_manager = null;
     private MusicService m_MusicService = null;
+    private ServiceConnection m_serviceConn = null;
     private boolean m_bound = false;
+
+    private GotMixIdAndPlayToken_BroadcastReceiver m_mixid_playtoken_broadcast_receiver = null;
+    private ServiceToActivity_BroadcastReceiver m_srv_to_act_broadcast_receiver = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,14 +57,16 @@ public class Tracks8Activity extends Activity
         g_broadcast_manager = LocalBroadcastManager.getInstance(getApplicationContext());
         IntentFilter got_mixid_playtoken_intent_filter = new IntentFilter();
 	got_mixid_playtoken_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
+	m_mixid_playtoken_broadcast_receiver = new GotMixIdAndPlayToken_BroadcastReceiver();
         g_broadcast_manager.registerReceiver(
-	     new GotMixIdAndPlayToken_BroadcastReceiver(), got_mixid_playtoken_intent_filter);
+	     m_mixid_playtoken_broadcast_receiver, got_mixid_playtoken_intent_filter);
         IntentFilter srv_to_act_filter = new IntentFilter();
         srv_to_act_filter.addAction(utility.TRACK_NAME_ACTION);
         srv_to_act_filter.addAction(utility.REPORT_ACTION);
         srv_to_act_filter.addAction(utility.STOP_SERVICE_ACTION);
+	m_srv_to_act_broadcast_receiver = new ServiceToActivity_BroadcastReceiver();
         g_broadcast_manager.registerReceiver(
-	     new ServiceToActivity_BroadcastReceiver(),srv_to_act_filter);
+	     m_srv_to_act_broadcast_receiver, srv_to_act_filter);
 
         setContentView(R.layout.activity_tracks8);
 
@@ -286,7 +292,7 @@ public class Tracks8Activity extends Activity
         try
         {
             this.startService(intent);
-            ServiceConnection serviceConn = new ServiceConnection() {
+            m_serviceConn = new ServiceConnection() {
 
                 public void onServiceConnected(ComponentName className, IBinder binder)
                 {
@@ -301,7 +307,7 @@ public class Tracks8Activity extends Activity
                 }
             };
 
-            bindService(intent, serviceConn,Context.BIND_AUTO_CREATE);
+            bindService(intent, m_serviceConn,Context.BIND_AUTO_CREATE);
         }
         catch(Exception e)
         {
@@ -314,10 +320,7 @@ public class Tracks8Activity extends Activity
      */
     public void pauseClicked(View view)
     {
-        if( m_bound )
-        {
-            m_MusicService.pauseTrack();
-        }
+	m_MusicService.pauseTrack();
     }
 
     /**
@@ -325,10 +328,7 @@ public class Tracks8Activity extends Activity
      */
     public void skipClicked(View view)
     {
-        if( m_bound )
-	{
-	    m_MusicService.skipTrack();
-	}
+	m_MusicService.skipTrack();
     }
 
     /**
@@ -336,10 +336,7 @@ public class Tracks8Activity extends Activity
      */
     public void stopClicked(View view)
     {
-        if( m_bound )
-        {
-	    finish();
-        }
+	finish();
     }
 
     /**
@@ -349,16 +346,19 @@ public class Tracks8Activity extends Activity
      */
     public void onDestroy() 
     {
-        while( false == m_bound )
-        {
-        }
-
 	if (null != m_MusicService)
 	{
 	    m_MusicService.releaseMediaPlayer();
 	    m_MusicService.stopService(new Intent(this, MusicService.class));
 	    m_MusicService = null;
+	    unbindService(m_serviceConn);
 	}
+	TextView tview = (TextView) findViewById(R.id.track_name);
+	tview.setVisibility(View.GONE);
+
+	g_broadcast_manager.unregisterReceiver(m_mixid_playtoken_broadcast_receiver);
+	g_broadcast_manager.unregisterReceiver(m_srv_to_act_broadcast_receiver);
+
 	super.onDestroy();
     }
 
