@@ -221,12 +221,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             // Get Ids and Names of mixes.
             String streamUrl = null;
             try {
-                JSONObject set = json.getJSONObject("set");
-                JSONObject track = set.getJSONObject("track");
-                streamUrl = track.getString("url");
-                System.out.println("STREAM URL: " + streamUrl);
-
-		tellActivityTrackName(track.getString("name"));
+		streamUrl = handleTrackResponseAndGetStreamUrl(json);
             } catch (Exception e) {
                 System.err.println("Malformed STREAM json: " + json.toString());
                 return;
@@ -234,6 +229,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
             delegate.playStream(streamUrl);
         }
+
     }
 
     private class SkipTrack_Task extends AsyncTask<Void, Void, String>
@@ -287,12 +283,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
                 if( status.equals("200 OK") )
                 {
-                    JSONObject set = json.getJSONObject("set");
-                    JSONObject track = set.getJSONObject("track");
-                    String streamUrl = track.getString("url");
-
-		    tellActivityTrackName(track.getString("name"));
-
+		    String streamUrl = handleTrackResponseAndGetStreamUrl(json);
                     playStream(streamUrl);
                 }
                 else {
@@ -304,6 +295,41 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 System.err.println("Exception parsing JSON");
             }
         }
+    }
+
+
+    /**
+     * Get track streaming url and tell activity track name.
+     * If last track, clean up music service.
+     */
+    private String handleTrackResponseAndGetStreamUrl(JSONObject json)
+    {
+	String streamUrl = null;
+	try
+	{
+	    JSONObject set = json.getJSONObject("set");
+	    boolean at_end = set.getBoolean("at_end");
+	    if (at_end) 
+	    {
+		Intent stop_service_intent = new Intent();
+		stop_service_intent.setAction(utility.STOP_SERVICE_ACTION);
+		m_broadcast_manager.sendBroadcast(stop_service_intent);
+	    }
+	    else
+	    {
+		JSONObject track = set.getJSONObject("track");
+		streamUrl = track.getString("url");
+		System.out.println("STREAM URL: " + streamUrl);
+
+		tellActivityTrackName(track.getString("name"));
+	    }
+	}
+	catch(Exception e)
+        {
+	    System.err.println("Exception parsing JSON getting stream url");
+	}
+	
+	return streamUrl;
     }
 
     private void tellActivityTrackName(String track_name)

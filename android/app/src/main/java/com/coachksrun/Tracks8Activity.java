@@ -58,7 +58,12 @@ public class Tracks8Activity extends Activity
         IntentFilter got_trackname_intent_filter = new IntentFilter();
         got_trackname_intent_filter.addAction(utility.TRACK_NAME_ACTION);
         g_broadcast_manager.registerReceiver(
-                new GotTrackName_BroadcastReceiver(),got_trackname_intent_filter);
+             new GotTrackName_BroadcastReceiver(),got_trackname_intent_filter);
+	IntentFilter stop_service_intent_filter = new IntentFilter();
+	stop_service_intent_filter.addAction(utility.STOP_SERVICE_ACTION);
+	g_broadcast_manager.registerReceiver(
+             new StopMusicService_BroadcastReceiver(), stop_service_intent_filter);
+
         setContentView(R.layout.activity_tracks8);
 
         // Lets user choose genre, choose playlist (get play_token and mix_id), and start streaming.
@@ -335,7 +340,7 @@ public class Tracks8Activity extends Activity
     {
         if( m_bound )
         {
-	        finish();
+	    finish();
         }
     }
 
@@ -350,13 +355,13 @@ public class Tracks8Activity extends Activity
         {
         }
 
-	    if (null != m_MusicService)
-	    {
-            m_MusicService.releaseMediaPlayer();
-	        m_MusicService.stopService(new Intent(this, MusicService.class));
-	        m_MusicService = null;
-        }
-	    super.onDestroy();
+	if (null != m_MusicService)
+	{
+	    m_MusicService.releaseMediaPlayer();
+	    m_MusicService.stopService(new Intent(this, MusicService.class));
+	    m_MusicService = null;
+	}
+	super.onDestroy();
     }
 
     private class GotTrackName_BroadcastReceiver extends BroadcastReceiver
@@ -370,6 +375,14 @@ public class Tracks8Activity extends Activity
 	    textview.setBackgroundColor(Color.BLACK);
 	    textview.setTextColor(Color.WHITE);
 	    textview.setVisibility(View.VISIBLE);
+	}
+    }
+
+    private class StopMusicService_BroadcastReceiver extends BroadcastReceiver
+    {
+	public void onReceive(Context context, Intent intent)
+	{
+	    finish();
 	}
     }
 
