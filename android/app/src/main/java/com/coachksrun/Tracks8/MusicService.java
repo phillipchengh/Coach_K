@@ -105,7 +105,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        System.out.println("******************** Started new Music Service **************************");
         m_intent = intent;
 	m_broadcast_manager = LocalBroadcastManager.getInstance(
 				getApplicationContext());

@@ -1,16 +1,21 @@
 package com.coachksrun;
 import com.coachksrun.Tracks8.MusicService;
+import com.coachksrun.Tracks8.PlaylistDbHelper;
 import com.coachksrun.Tracks8.utility;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -31,21 +36,28 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
+import java.nio.DoubleBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
 import java.net.URL;
 import java.net.HttpURLConnection;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class Tracks8Activity extends Activity
 {
     public String g_play_token = null;
     public String g_mix_id = null;
+    public String g_genre = null;
     private LocalBroadcastManager g_broadcast_manager = null;
     private MusicService m_MusicService = null;
     private ServiceConnection m_serviceConn = null;
     private boolean m_bound = false;
+
+    private PlaylistDbHelper m_dbHelper = null;
+    private SQLiteDatabase m_db = null;
 
     private GotMixIdAndPlayToken_BroadcastReceiver m_mixid_playtoken_broadcast_receiver = null;
     private ServiceToActivity_BroadcastReceiver m_srv_to_act_broadcast_receiver = null;
@@ -72,6 +84,13 @@ public class Tracks8Activity extends Activity
 
         // Lets user choose genre, choose playlist (get play_token and mix_id), and start streaming.
         SetupMusicService();
+        //setupSQLiteDB();
+    }
+
+    public void setupSQLiteDB()
+    {
+        m_dbHelper = new PlaylistDbHelper(this);
+        m_db = m_dbHelper.getWritableDatabase();
     }
 
     /**
@@ -103,6 +122,7 @@ public class Tracks8Activity extends Activity
 		    String chosen_tag = genre_name_to_tag.get(
 			genre_tags[position]);
 		    System.out.println("Chosen genre tag: " + chosen_tag);
+            g_genre = chosen_tag;
 		    String genre_url = String.format(
 			utility.URL_GENRE, chosen_tag);
 		    
@@ -309,10 +329,33 @@ public class Tracks8Activity extends Activity
 
             bindService(intent, m_serviceConn,Context.BIND_AUTO_CREATE);
         }
-        catch(Exception e)
-        {
-            System.err.println("Exception in processFinish(): "+e.getMessage());
+        catch(Exception e) {
+            System.err.println("Exception in processFinish(): " + e.getMessage());
         }
+
+        /*
+        ContentValues values = new ContentValues();
+        values.put(PlaylistDbHelper.COLUMN_NAME_GENRE, g_genre);
+        values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, g_mix_id);
+
+        long newRowId = m_db.insert(PlaylistDbHelper.TABLE_NAME, null, values);
+
+        Cursor c = m_db.query(PlaylistDbHelper.TABLE_NAME, null, null, null, null, null, null, null);
+
+        if( c.moveToFirst() )
+        {
+            System.out.println("SQLiteDB - Genre: "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_GENRE))+", MixID: "+c.getInt(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
+        }
+        else
+        {
+            System.out.println("SQLiteDB is empty");
+        }
+
+        while( c.moveToNext() )
+        {
+            System.out.println("SQLiteDB - Genre: "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_GENRE))+", MixID: "+c.getInt(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
+        }
+        */
     }
 
     /**
