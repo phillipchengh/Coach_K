@@ -317,14 +317,6 @@ public class Tracks8Activity extends Activity
         }
     }
 
-    public void skipClicked(View view)
-    {
-        if( m_bound )
-        {
-            m_MusicService.skipTrack();
-        }
-    }
-
     /**
      * Respond to Skip button click event.
      */
