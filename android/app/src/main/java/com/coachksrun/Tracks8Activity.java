@@ -55,14 +55,12 @@ public class Tracks8Activity extends Activity
 	got_mixid_playtoken_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
         g_broadcast_manager.registerReceiver(
 	     new GotMixIdAndPlayToken_BroadcastReceiver(), got_mixid_playtoken_intent_filter);
-        IntentFilter got_trackname_intent_filter = new IntentFilter();
-        got_trackname_intent_filter.addAction(utility.TRACK_NAME_ACTION);
+        IntentFilter srv_to_act_filter = new IntentFilter();
+        srv_to_act_filter.addAction(utility.TRACK_NAME_ACTION);
+        srv_to_act_filter.addAction(utility.REPORT_ACTION);
+        srv_to_act_filter.addAction(utility.STOP_SERVICE_ACTION);
         g_broadcast_manager.registerReceiver(
-             new GotTrackName_BroadcastReceiver(),got_trackname_intent_filter);
-	IntentFilter stop_service_intent_filter = new IntentFilter();
-	stop_service_intent_filter.addAction(utility.STOP_SERVICE_ACTION);
-	g_broadcast_manager.registerReceiver(
-             new StopMusicService_BroadcastReceiver(), stop_service_intent_filter);
+	     new ServiceToActivity_BroadcastReceiver(),srv_to_act_filter);
 
         setContentView(R.layout.activity_tracks8);
 
@@ -364,29 +362,64 @@ public class Tracks8Activity extends Activity
 	super.onDestroy();
     }
 
-    private class GotTrackName_BroadcastReceiver extends BroadcastReceiver
-    {
-        public void onReceive(Context context, Intent intent)
-        {
-	    String track_name = intent.getStringExtra("track_name");
-	    System.out.println("Got track name:" + track_name);
-	    TextView textview = (TextView) findViewById(R.id.track_name);
-	    textview.setText(track_name);
-	    textview.setBackgroundColor(Color.BLACK);
-	    textview.setTextColor(Color.WHITE);
-	    textview.setVisibility(View.VISIBLE);
-	}
-    }
-
-    private class StopMusicService_BroadcastReceiver extends BroadcastReceiver
+    private class ServiceToActivity_BroadcastReceiver extends BroadcastReceiver
     {
 	public void onReceive(Context context, Intent intent)
 	{
-	    finish();
+	    String action = intent.getAction();
+	    System.out.println(">>>> " + action);
+	    if (utility.TRACK_NAME_ACTION == action)
+	    {
+		String track_name = intent.getStringExtra("track_name");
+		System.out.println("Got track name:" + track_name);
+		TextView textview = (TextView) findViewById(R.id.track_name);
+		textview.setText(track_name);
+		textview.setBackgroundColor(Color.BLACK);
+		textview.setTextColor(Color.WHITE);
+		textview.setVisibility(View.VISIBLE);
+	    }
+	    else if (utility.STOP_SERVICE_ACTION == action)
+	    {
+		finish();
+	    }
+	    else if (utility.REPORT_ACTION == action)
+	    {
+		try 
+		{
+		    String reporting_url = intent.getStringExtra("report_url");
+		    System.out.println("Reporting url: " + reporting_url);
+		    URL url = new URL(reporting_url);
+		    (new ReportTo8Tracks()).execute(url);
+		}
+		catch (Exception e)
+		{
+		    System.err.println("Malformed reporting url");
+		}
+	    }
 	}
     }
+ 
+    private class ReportTo8Tracks extends AsyncTask<URL, Void, Void> {
 
-    @Override
+        protected Void doInBackground(URL... params) {
+            try
+            {
+                URL url = params[0];
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection = utility.SetUp8tracks(urlConnection);
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                String response = utility.readStream(in);
+                urlConnection.disconnect();
+            }
+            catch(Exception e)
+            {
+                System.err.println("Error reporting to 8tracks: "+e.getMessage());
+            }
+	    return null;
+        }
+    }
+
+   @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.tracks8, menu);

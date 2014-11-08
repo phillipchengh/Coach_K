@@ -14,12 +14,13 @@ public class utility {
     public static String URL_GENRE = "http://8tracks.com/mix_sets/tags:%s:popular.json";
     public static int CAP_NUM_MIXES = 3;
 
-    public static String MIX_ID_PLAY_TOKEN_ACTION = "com.coachksrun.action.GET_MIX_ID_PLAY_TOKEN";
-    public static String SKIP_SONG_ACTION = "com.coachksrun.action.SKIP_SONG";
-    public static String TRACK_NAME_ACTION = "com.coachksrun.action.GOT_TRACK_NAME";
-    public static String STOP_SERVICE_ACTION = "com.coachksrun.action.STOP_MUSIC_SERVICE";
+    public static final String MIX_ID_PLAY_TOKEN_ACTION = "com.coachksrun.action.GET_MIX_ID_PLAY_TOKEN";
+    public static final String SKIP_SONG_ACTION = "com.coachksrun.action.SKIP_SONG";
+    public static final String TRACK_NAME_ACTION = "com.coachksrun.action.GOT_TRACK_NAME";
+    public static final String STOP_SERVICE_ACTION = "com.coachksrun.action.STOP_MUSIC_SERVICE";
+    public static final String REPORT_ACTION = "com.coachksrun.action.REPORT_8TRACKS";
 
-    public static String LOADING_TEXT = "Hold on...";
+    public static final String LOADING_TEXT = "Hold on...";
 
     public static final String ACTION_PLAY = "com.example.action.PLAY";
 

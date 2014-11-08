@@ -322,6 +322,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 		System.out.println("STREAM URL: " + streamUrl);
 
 		tellActivityTrackName(track.getString("name"));
+
+		reportTo8Tracks(track.getString("id"));
 	    }
 	}
 	catch(Exception e)
@@ -338,5 +340,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 	send_trackname_intent.setAction(utility.TRACK_NAME_ACTION);
 	send_trackname_intent.putExtra("track_name", track_name);
 	m_broadcast_manager.sendBroadcast(send_trackname_intent);
+    }
+
+    private void reportTo8Tracks(String track_id)
+    {
+	String url = String.format("http://8tracks.com/sets/%s/report.json?track_id=%s&mix_id=%s", m_playToken, track_id, m_mixID);
+	Intent reporting_intent = new Intent();
+	reporting_intent.setAction(utility.REPORT_ACTION);
+	reporting_intent.putExtra("report_url", url);
+	m_broadcast_manager.sendBroadcast(reporting_intent);
     }
 }
