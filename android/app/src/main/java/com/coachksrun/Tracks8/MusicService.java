@@ -31,6 +31,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private Intent m_intent = null;
     private MediaPlayer m_mediaPlayer = null;
     private boolean isPaused = false;
+    private boolean skipping = false;
     private final IBinder m_Binder = new LocalBinder();
 
     private LocalBroadcastManager m_broadcast_manager = null;
@@ -54,7 +55,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void skipTrack()
     {
-        if (null != m_mediaPlayer) {
+        if (null != m_mediaPlayer)
+        {
+            if( skipping )
+            {
+                return;
+            }
+            else
+            {
+                skipping = true;
+            }
+
             if ( m_mediaPlayer.isPlaying() || isPaused )
             {
                 (new SkipTrack_Task()).execute();
@@ -84,6 +95,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+        System.out.println("******************** Started new Music Service **************************");
         m_intent = intent;
 	m_broadcast_manager = LocalBroadcastManager.getInstance(
 				getApplicationContext());
@@ -144,6 +156,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onPrepared(MediaPlayer player)
     {
         player.start();
+        if( skipping )
+        {
+            skipping = false;
+        }
     }
 
     public class EndOfTrackListener implements MediaPlayer.OnCompletionListener
