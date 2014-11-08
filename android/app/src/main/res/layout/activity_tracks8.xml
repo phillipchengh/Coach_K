@@ -39,7 +39,15 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:text="@string/tracks8_next"
-            android:onClick="skipClicked_stupid" />
+            android:onClick="skipClicked" />
+
+        <Button
+            android:id="@+id/button_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="@string/tracks8_stop"
+            android:onClick="stopClicked" />
 
     </LinearLayout>
 

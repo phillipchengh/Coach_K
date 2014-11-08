@@ -39,7 +39,6 @@ public class Tracks8Activity extends Activity
 {
     public String g_play_token = null;
     public String g_mix_id = null;
-    //public MediaPlayer g_media_player = null;
     private LocalBroadcastManager g_broadcast_manager = null;
     private MusicService m_MusicService = null;
     private boolean m_bound = false;
@@ -297,14 +296,27 @@ public class Tracks8Activity extends Activity
     }
 
     /**
-     * Respond to Skip button click event.
+     * Respond to Stop button click event.
      */
-    public void skipClicked_stupid(View view)
+    public void stopClicked(View view)
     {
         if( m_bound )
         {
-            m_MusicService.skipTrack();
+	    finish();
         }
+    }
+
+    /**
+     * Go back to main menu after cleaning up music service.
+     */
+    public void onDestroy() 
+    {
+	if (null != m_MusicService) 
+	{
+            m_MusicService.releaseMediaPlayer();
+	    m_MusicService.stopService(new Intent(this, MusicService.class));
+	}
+	super.onDestroy();
     }
 
     @Override

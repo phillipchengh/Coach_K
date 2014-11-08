@@ -61,6 +61,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     }
 
+    public void releaseMediaPlayer()
+    {
+        if (null != m_mediaPlayer) {
+	    m_mediaPlayer.release();
+	    m_mediaPlayer = null;
+	}
+    }
+
     private class MusicService_BroadcastReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent)
