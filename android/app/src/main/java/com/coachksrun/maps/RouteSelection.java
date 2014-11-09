@@ -111,14 +111,10 @@ public class RouteSelection extends Activity implements
                 //If latLngVector is empty, add current position and selected position
                 //Else route from last position in vector
 
-
                 if(latLngVector.size() == 0) {
                     LatLng tempLL = new LatLng(previousLocation.getLatitude(), previousLocation.getLongitude());
                     latLngVector.add(tempLL);
                 }
-
-
-
 
                 map.addMarker(new MarkerOptions()
                         .position(latLng));
@@ -215,5 +211,19 @@ public class RouteSelection extends Activity implements
                 .position(latLng)
                 .title("Current Location"));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
+    }
+
+    public void goHome(View view) {
+        if(latLngVector.size() > 2) {
+            LatLng latLng = latLngVector.get(0);
+
+            map.addMarker(new MarkerOptions()
+                    .position(latLng));
+            Routing routing = new Routing(Routing.TravelMode.WALKING);
+            routing.registerListener(RouteSelection.this);
+            routing.execute(latLngVector.lastElement(), latLng);
+
+            latLngVector.add(latLng);
+        }
     }
 }

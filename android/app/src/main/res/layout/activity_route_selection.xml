@@ -15,12 +15,26 @@
         android:layout_height="wrap_content"
         android:name="com.google.android.gms.maps.MapFragment"
         android:layout_weight="1"/>
-
-    <Button
-        android:id="@+id/clearRoute"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Clear All"
-        android:onClick="clearRoute"/>
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/goHome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Go Home"
+            android:onClick="goHome"/>
+
+        <Button
+            android:id="@+id/clearRoute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear All"
+            android:onClick="clearRoute"/>
+
+
+    </LinearLayout>
 
 </LinearLayout>
