@@ -1,5 +1,6 @@
-package com.coachksrun;
+package com.coachksrun.maps;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,18 +10,19 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.coachksrun.maps.MapModeSelect;
-import com.coachksrun.maps.MapsActivity;
+import com.coachksrun.LoginActivity;
+import com.coachksrun.R;
+import com.coachksrun.Tracks8Activity;
+import com.coachksrun.YelpActivity;
 
-
-public class MyActivity extends ListActivity {
+public class MapModeSelect extends ListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my);
+        setContentView(R.layout.activity_map_mode_select);
 
-        String[] items = { "login", "8tracks", "maps", "yelp" };
+        String[] items = { "Active", "Route" };
         setListAdapter(new ArrayAdapter<String>(
                 getApplicationContext(),
                 android.R.layout.simple_list_item_1,
@@ -33,19 +35,11 @@ public class MyActivity extends ListActivity {
         Intent i;
         switch(position) {
             case 0:
-                i = new Intent(MyActivity.this, LoginActivity.class);
+                i = new Intent(MapModeSelect.this, MapsActivity.class);
                 startActivity(i);
                 break;
             case 1:
-                i = new Intent(MyActivity.this, Tracks8Activity.class);
-                startActivity(i);
-                break;
-            case 2:
-                i = new Intent(MyActivity.this, MapModeSelect.class);
-                startActivity(i);
-                break;
-            case 3:
-                i = new Intent(MyActivity.this, YelpActivity.class);
+                i = new Intent(MapModeSelect.this, RouteSelection.class);
                 startActivity(i);
                 break;
         }
@@ -54,7 +48,7 @@ public class MyActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.my, menu);
+        getMenuInflater().inflate(R.menu.map_mode_select, menu);
         return true;
     }
 
