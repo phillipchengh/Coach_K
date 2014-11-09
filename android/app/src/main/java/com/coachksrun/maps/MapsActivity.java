@@ -1,18 +1,20 @@
 package com.coachksrun.maps;
 
-/**
- * Adapted from AndroidHive
- * http://www.androidhive.info/2012/07/android-gps-location-manager-tutorial/
- */
+//http://developer.android.com/training/location/retrieve-current.html
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.coachksrun.R;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -20,102 +22,33 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends Activity {
+public class MapsActivity extends Activity implements
+        GooglePlayServicesClient.ConnectionCallbacks,
+        GooglePlayServicesClient.OnConnectionFailedListener,
+        LocationListener {
+    private final static int UPDATE_INTERVAL = 1000;
+    private final static int FASTEST_INTERVAL = 100;
+    private LocationClient mLocationClient;
+    private LocationRequest mLocationRequest;
+    private Location previousLocation;
+
     private GoogleMap map;
     private Marker currentMarker;
-    private static final int MS_TO_UPDATE = 1000;
     private MapStatsFragment mMapStats;
-    private GPSTracker mGPS;
-    private Runnable mUpdateTimeTask = new Runnable() {
-        public void run() {
-            while (true) {
-                try {
-
-                    /*
-                    mGPS.getLocation();
-                    final double currentLatitude = mGPS.getLatitude();
-                    final double currentLongitude = mGPS.getLongitude();
-                    LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
-                    //map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
-
-                    if (map != null && currentMarker != null)
-                        currentMarker.setPosition(currentLocation);
-                    */
-
-                    Thread.sleep(MS_TO_UPDATE);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //mMapStats.setSpeed(mGPS.getSpeed()); // TODO: Check if mGPS.getSpeed() actually works
-                        String status = mGPS.getLatitude() + ", " + mGPS.getLongitude() + ": " + mGPS.getSpeed() + " mph";
-                        mMapStats.setSpeed(status); // TODO: Check if mGPS.getSpeed() actually works
-
-
-                        //mGPS.getLocation();
-                        final double currentLatitude = mGPS.getLatitude();
-                        final double currentLongitude = mGPS.getLongitude();
-                        LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
-                        //map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
-
-                        if (map != null && currentMarker != null)
-                            currentMarker.setPosition(currentLocation);
-                    }
-                });
-
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        mLocationClient = new LocationClient(this, this, this);
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(
+                LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        // Set the fastest update interval to 1 second
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
 
-        // Create a new GPS tracker to get the current coordinates
-        mGPS = new GPSTracker(this);
-        if(mGPS.canGetLocation()){
-            // Final variables for access in nested function
-            final double currentLatitude = mGPS.getLatitude();
-            final double currentLongitude = mGPS.getLongitude();
-            LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
-
-            map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
-
-            mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
-
-            if (map!=null){
-                currentMarker = map.addMarker(new MarkerOptions()
-                        .position(currentLocation)
-                        .title("Current Location"));
-
-                map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-                    @Override
-                    public void onMapLongClick(LatLng latLng) {
-                        //map.addMarker(new MarkerOptions().position(latLng));
-                        String uri = "http://maps.google.com/maps?saddr=" +
-                                currentLatitude + "," + currentLongitude +
-                                "&daddr=" + latLng.latitude + "," + latLng.longitude;
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                        intent.setClassName("com.google.android.apps.maps",
-                                "com.google.android.maps.MapsActivity");
-                        startActivity(intent);
-                    }
-                });
-
-                // Move the camera instantly to hamburg with a zoom of 15.
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
-
-                // Zoom in, animating the camera.
-                map.animateCamera(CameraUpdateFactory.zoomTo(18), 2000, null);
-            }
-
-            Thread mapStatsThread = new Thread(mUpdateTimeTask);
-            mapStatsThread.start();
-        }
+        mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
     }
 
 
@@ -136,5 +69,84 @@ public class MapsActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Connect the client.
+        mLocationClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mLocationClient.disconnect();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        mLocationClient.requestLocationUpdates(mLocationRequest, this);
+
+        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+        Location currentLocation = mLocationClient.getLastLocation();
+        LatLng latLng = new LatLng(currentLocation.getLatitude(),
+                currentLocation.getLongitude());
+
+        previousLocation = currentLocation;
+
+        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+                .getMap();
+        currentMarker = map.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title("Current Location"));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
+    }
+
+    @Override
+    public void onDisconnected() {
+        Toast.makeText(this, "Disconnected. Please re-connect.",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(this, "Connection failed, please restart.",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onLocationChanged(final Location location) {
+        LatLng latLng = new LatLng(location.getLatitude(),
+                location.getLongitude());
+
+        final float speed = getSpeed(previousLocation, location);
+
+        currentMarker.setPosition(latLng);
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String status = "Current Coordinates: " + location.getLatitude() + ", " +
+                        location.getLongitude() + "\n" +
+                        "Current Speed: " + speed + " mph";
+                mMapStats.setSpeed(status);
+
+                final double currentLatitude = location.getLatitude();
+                final double currentLongitude = location.getLongitude();
+                LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+
+                if (map != null && currentMarker != null)
+                    currentMarker.setPosition(currentLocation);
+            }
+        });
+    }
+
+    private float getSpeed(Location previousLocation, Location currentLocation) {
+        float meters = previousLocation.distanceTo(currentLocation);
+        float miles = meters * (float) 0.00062137;
+        return miles * 60 * 12;
     }
 }
