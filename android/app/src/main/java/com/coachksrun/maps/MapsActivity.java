@@ -3,6 +3,7 @@ package com.coachksrun.maps;
 //http://developer.android.com/training/location/retrieve-current.html
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
@@ -10,6 +11,9 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.coachksrun.R;
+import com.directions.route.Route;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -21,11 +25,14 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.Vector;
 
 public class MapsActivity extends Activity implements
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener, RoutingListener {
     private final static int UPDATE_INTERVAL = 1000;
     private final static int FASTEST_INTERVAL = 100;
     private LocationClient mLocationClient;
@@ -35,6 +42,8 @@ public class MapsActivity extends Activity implements
     private GoogleMap map;
     private Marker currentMarker;
     private MapStatsFragment mMapStats;
+    private Vector<LatLng> latLngVector = new Vector<LatLng>();
+    private Vector<PolylineOptions> polylineOptionsVector = new Vector<PolylineOptions>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +106,21 @@ public class MapsActivity extends Activity implements
 
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
                 .getMap();
+        map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                LatLng tempLL = new LatLng(previousLocation.getLatitude(), previousLocation.getLongitude());
+
+                map.addMarker(new MarkerOptions()
+                        .position(latLng));
+                Routing routing = new Routing(Routing.TravelMode.WALKING);
+                routing.registerListener(MapsActivity.this);
+                routing.execute(tempLL, latLng);
+
+                latLngVector.add(latLng);
+            }
+        });
+
         currentMarker = map.addMarker(new MarkerOptions()
                 .position(latLng)
                 .title("Current Location"));
@@ -148,5 +172,30 @@ public class MapsActivity extends Activity implements
         float meters = previousLocation.distanceTo(currentLocation);
         float miles = meters * (float) 0.00062137;
         return miles * 60 * 12;
+    }
+
+    @Override
+    public void onRoutingFailure() {
+        Toast.makeText(this, "Could not route, try again.",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRoutingStart() {
+        Toast.makeText(this, "Computing route...",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRoutingSuccess(PolylineOptions mPolyOptions, Route route) {
+        Toast.makeText(this, "Routing successful.",
+                Toast.LENGTH_SHORT).show();
+        PolylineOptions polyoptions = new PolylineOptions();
+        polyoptions.color(Color.BLUE);
+        polyoptions.width(10);
+        polyoptions.addAll(mPolyOptions.getPoints());
+        map.addPolyline(polyoptions);
+
+        polylineOptionsVector.add(mPolyOptions);
     }
 }
