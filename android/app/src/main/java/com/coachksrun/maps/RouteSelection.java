@@ -3,6 +3,7 @@ package com.coachksrun.maps;
 //http://developer.android.com/training/location/retrieve-current.html
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -28,22 +29,26 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class RouteSelection extends Activity implements
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener,
         LocationListener, RoutingListener {
+    public final static String EXTRA_LAT_LNG = "com.coachksrun.maps.lat_lng";
+    public final static String EXTRA_POLYLINE = "com.coachksrun.maps.polyline";
+
     private final static int UPDATE_INTERVAL = 1000;
     private final static int FASTEST_INTERVAL = 100;
+
     private LocationClient mLocationClient;
     private LocationRequest mLocationRequest;
     private Location previousLocation;
 
     private GoogleMap map;
     private Marker currentMarker;
-    private Vector<LatLng> latLngVector = new Vector<LatLng>();
-    private Vector<PolylineOptions> polylineOptionsVector = new Vector<PolylineOptions>();
+    private ArrayList<LatLng> latLngArray = new ArrayList<LatLng>();
+    private ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +61,6 @@ public class RouteSelection extends Activity implements
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         // Set the fastest update interval to 1 second
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-
     }
 
 
@@ -73,8 +77,13 @@ public class RouteSelection extends Activity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id) {
+            case R.id.action_settings:
+                return true;
+            case android.R.id.home:
+                setRouteResult();
+                finish();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -108,21 +117,21 @@ public class RouteSelection extends Activity implements
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                //If latLngVector is empty, add current position and selected position
+                //If latLngArray is empty, add current position and selected position
                 //Else route from last position in vector
 
-                if(latLngVector.size() == 0) {
+                if(latLngArray.size() == 0) {
                     LatLng tempLL = new LatLng(previousLocation.getLatitude(), previousLocation.getLongitude());
-                    latLngVector.add(tempLL);
+                    latLngArray.add(tempLL);
                 }
 
                 map.addMarker(new MarkerOptions()
                         .position(latLng));
                 Routing routing = new Routing(Routing.TravelMode.WALKING);
                 routing.registerListener(RouteSelection.this);
-                routing.execute(latLngVector.lastElement(), latLng);
+                routing.execute(latLngArray.get(latLngArray.size() - 1), latLng);
 
-                latLngVector.add(latLng);
+                latLngArray.add(latLng);
             }
         });
 
@@ -199,14 +208,14 @@ public class RouteSelection extends Activity implements
         polyoptions.addAll(mPolyOptions.getPoints());
         map.addPolyline(polyoptions);
 
-        polylineOptionsVector.add(mPolyOptions);
+        polylineOptionsArray.add(mPolyOptions);
     }
 
     public void clearRoute(View view) {
         LatLng latLng = currentMarker.getPosition();
         map.clear();
-        latLngVector.clear();
-        polylineOptionsVector.clear();
+        latLngArray.clear();
+        polylineOptionsArray.clear();
         currentMarker = map.addMarker(new MarkerOptions()
                 .position(latLng)
                 .title("Current Location"));
@@ -214,16 +223,23 @@ public class RouteSelection extends Activity implements
     }
 
     public void goHome(View view) {
-        if(latLngVector.size() > 2) {
-            LatLng latLng = latLngVector.get(0);
+        if(latLngArray.size() > 2) {
+            LatLng latLng = latLngArray.get(0);
 
             map.addMarker(new MarkerOptions()
                     .position(latLng));
             Routing routing = new Routing(Routing.TravelMode.WALKING);
             routing.registerListener(RouteSelection.this);
-            routing.execute(latLngVector.lastElement(), latLng);
+            routing.execute(latLngArray.get(latLngArray.size() - 1), latLng);
 
-            latLngVector.add(latLng);
+            latLngArray.add(latLng);
         }
+    }
+
+    public void setRouteResult() {
+        Intent data = new Intent();
+        data.putExtra(EXTRA_LAT_LNG, latLngArray);
+        data.putExtra(EXTRA_POLYLINE, polylineOptionsArray);
+        setResult(RESULT_OK, data);
     }
 }

@@ -1,21 +1,28 @@
 package com.coachksrun.maps;
 
-import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.coachksrun.LoginActivity;
 import com.coachksrun.R;
-import com.coachksrun.Tracks8Activity;
-import com.coachksrun.YelpActivity;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
 
 public class MapModeSelect extends ListActivity {
+
+    private static final int REQUEST_ROUTE = 0;
+    private static final int REQUEST_ACTIVE = 1;
+
+    private ArrayList<LatLng> latLngArray = new ArrayList<LatLng>();
+    private ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +43,13 @@ public class MapModeSelect extends ListActivity {
         switch(position) {
             case 0:
                 i = new Intent(MapModeSelect.this, MapsActivity.class);
-                startActivity(i);
+                i.putExtra(MapsActivity.EXTRA_LAT_LNG, latLngArray);
+                i.putExtra(MapsActivity.EXTRA_POLYLINE, polylineOptionsArray);
+                startActivityForResult(i, REQUEST_ACTIVE);
                 break;
             case 1:
                 i = new Intent(MapModeSelect.this, RouteSelection.class);
-                startActivity(i);
+                startActivityForResult(i, REQUEST_ROUTE);
                 break;
         }
     }
@@ -62,5 +71,22 @@ public class MapModeSelect extends ListActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch(requestCode) {
+            case REQUEST_ROUTE:
+                if (data != null) {
+                    latLngArray = (ArrayList<LatLng>) data.getSerializableExtra(RouteSelection.EXTRA_LAT_LNG);
+                    polylineOptionsArray = (ArrayList<PolylineOptions>) data.getSerializableExtra(RouteSelection.EXTRA_POLYLINE);
+                }
+                break;
+            default:
+                Log.e("MapModeSelect", "Switch statement went to default!\n");
+                break;
+        }
     }
 }

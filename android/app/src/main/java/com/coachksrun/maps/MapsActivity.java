@@ -3,6 +3,7 @@ package com.coachksrun.maps;
 //http://developer.android.com/training/location/retrieve-current.html
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -27,14 +28,18 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class MapsActivity extends Activity implements
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener,
         LocationListener, RoutingListener {
+    public final static String EXTRA_LAT_LNG = "com.coachksrun.maps.lat_lng";
+    public final static String EXTRA_POLYLINE = "com.coachksrun.maps.polyline";
+
     private final static int UPDATE_INTERVAL = 1000;
     private final static int FASTEST_INTERVAL = 100;
+
     private LocationClient mLocationClient;
     private LocationRequest mLocationRequest;
     private Location previousLocation;
@@ -42,8 +47,8 @@ public class MapsActivity extends Activity implements
     private GoogleMap map;
     private Marker currentMarker;
     private MapStatsFragment mMapStats;
-    private Vector<LatLng> latLngVector = new Vector<LatLng>();
-    private Vector<PolylineOptions> polylineOptionsVector = new Vector<PolylineOptions>();
+    private ArrayList<LatLng> latLngArray = new ArrayList<LatLng>();
+    private ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,14 @@ public class MapsActivity extends Activity implements
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
 
         mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
+
+        Intent i = getIntent();
+        ArrayList<LatLng> ll = (ArrayList<LatLng>) i.getSerializableExtra(EXTRA_LAT_LNG);
+        if (ll != null)
+            latLngArray = ll;
+        ArrayList<PolylineOptions> p = (ArrayList<PolylineOptions>) i.getSerializableExtra(EXTRA_POLYLINE);
+        if (p != null)
+            polylineOptionsArray = p;
     }
 
 
@@ -117,7 +130,7 @@ public class MapsActivity extends Activity implements
                 routing.registerListener(MapsActivity.this);
                 routing.execute(tempLL, latLng);
 
-                latLngVector.add(latLng);
+                latLngArray.add(latLng);
             }
         });
 
@@ -196,6 +209,6 @@ public class MapsActivity extends Activity implements
         polyoptions.addAll(mPolyOptions.getPoints());
         map.addPolyline(polyoptions);
 
-        polylineOptionsVector.add(mPolyOptions);
+        polylineOptionsArray.add(mPolyOptions);
     }
 }
