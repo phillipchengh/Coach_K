@@ -34,45 +34,6 @@
 	   android:layout_width="match_parent"
 	   android:layout_height="wrap_content"/>
 
-	<LinearLayout
-	   android:layout_below="@id/track_name"
-	   android:id="@+id/track_control_buttons"
-	   android:visibility="gone"
-           android:layout_width="match_parent"
-           android:layout_height="match_parent"
-           android:orientation="horizontal">
-
-          <Button
-             android:id="@+id/button_pause"
-             android:layout_width="0dp"
-             android:layout_height="wrap_content"
-	     android:layout_weight="0.3"
-             android:text="@string/tracks8_pause"
-	     android:textColor="#FFF"
-	     android:background="#000"
-             android:onClick="pauseClicked" />
-
-          <Button
-             android:id="@+id/button_next"
-             android:layout_width="0dp"
-             android:layout_height="wrap_content"
-	     android:layout_weight="0.3"
-             android:text="@string/tracks8_next"
-	     android:textColor="#FFF"
-	     android:background="#000"
-             android:onClick="skipClicked" />
-
-          <Button
-             android:id="@+id/button_next"
-             android:layout_width="0dp"
-             android:layout_height="wrap_content"
-	     android:layout_weight="0.3"
-             android:text="@string/tracks8_stop"
-	     android:textColor="#FFF"
-	     android:background="#000"
-             android:onClick="stopClicked" />
-
-	</LinearLayout>
     </LinearLayout>
 
 

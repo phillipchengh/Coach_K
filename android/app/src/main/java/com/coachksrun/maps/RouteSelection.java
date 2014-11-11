@@ -236,6 +236,14 @@ public class RouteSelection extends Activity implements
         }
     }
 
+    public void startRoute(View view) {
+        Intent data = new Intent(RouteSelection.this, MapsActivity.class);
+
+        data.putExtra(EXTRA_LAT_LNG, latLngArray);
+        data.putExtra(EXTRA_POLYLINE, polylineOptionsArray);
+        startActivity(data);
+    }
+
     public void setRouteResult() {
         Intent data = new Intent();
         data.putExtra(EXTRA_LAT_LNG, latLngArray);

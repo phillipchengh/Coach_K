@@ -3,15 +3,25 @@ package com.coachksrun.maps;
 //http://developer.android.com/training/location/retrieve-current.html
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.coachksrun.R;
+import com.coachksrun.Tracks8.MusicService;
+import com.coachksrun.Tracks8.MusicPlayer;
+import com.coachksrun.Tracks8.utility;
 import com.directions.route.Route;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
@@ -52,6 +62,8 @@ public class MapsActivity extends Activity implements
     private ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
     private ArrayList<PolylineOptions> mRoutePolylineOptionsArray;
 
+    private MusicPlayer mMusicPlayer = new MusicPlayer();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +86,11 @@ public class MapsActivity extends Activity implements
         ArrayList<PolylineOptions> p = (ArrayList<PolylineOptions>) intent.getSerializableExtra(EXTRA_POLYLINE);
         if (p != null)
             mRoutePolylineOptionsArray = p;
+
+        mMusicPlayer.SetupMusicService(this);
+        mMusicPlayer.setupMusicPlayerBroadcasts(
+                LocalBroadcastManager.getInstance(getApplicationContext()));
+
     }
 
 
@@ -149,6 +166,12 @@ public class MapsActivity extends Activity implements
     }
 
     @Override
+    public void onDestroy() {
+        mMusicPlayer.cleanUp();
+
+        super.onDestroy();
+    }
+    @Override
     public void onDisconnected() {
         Toast.makeText(this, "Disconnected. Please re-connect.",
                 Toast.LENGTH_SHORT).show();
@@ -218,5 +241,20 @@ public class MapsActivity extends Activity implements
         map.addPolyline(polyoptions);
 
         polylineOptionsArray.add(mPolyOptions);
+    }
+
+    public void musicPauseClicked(View view)
+    {
+        mMusicPlayer.pauseClicked(view);
+    }
+
+    public void musicSkipClicked(View view)
+    {
+        mMusicPlayer.skipClicked(view);
+    }
+
+    public void musicStopClicked(View view)
+    {
+        mMusicPlayer.stopClicked(view);
     }
 }
