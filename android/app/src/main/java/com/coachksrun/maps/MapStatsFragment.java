@@ -37,7 +37,7 @@ public class MapStatsFragment extends Fragment {
         return textView;
     }
 
-    public void setSpeed(float speed) {
+    public void setSpeed(String speed) {
         mTextView.setText("" + speed);
     }
 
