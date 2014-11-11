@@ -1,4 +1,5 @@
 *~
+.DS_Store
 server/node_modules/
 server/.env
 
@@ -17,7 +18,7 @@ bin/
 gen/
 out/
 build/
-app/build/
+android/facebook/build/
 
 # Local configuration file (sdk path, etc)
 local.properties
