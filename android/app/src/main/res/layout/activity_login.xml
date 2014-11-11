@@ -9,8 +9,9 @@
     tools:context="com.coachksrun.LoginActivity">
 
     <TextView
-        android:text="@string/hello_world"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="Looking up Facebook..."
+        android:id="@+id/textView4" />
 
 </RelativeLayout>
