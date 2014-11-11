@@ -1,2 +1,43 @@
 *~
 .DS_Store
+server/node_modules/
+server/.env
+
+#built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+out/
+build/
+android/facebook/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Windows thumbnail db
+Thumbs.db
+
+# OSX files
+.DS_Store
+
+# Eclipse project files
+.classpath
+.project
+
+# IDEA/Android Studio project files
+.idea
+.idea/workspace.xml
+*iml
+
+# Gradle cache
+.gradle
+

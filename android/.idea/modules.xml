@@ -10,7 +10,11 @@
       <module fileurl="file://$PROJECT_DIR$/SwitchUserSample/SwitchUserSample.iml" filepath="$PROJECT_DIR$/SwitchUserSample/SwitchUserSample.iml" />
       <module fileurl="file://$PROJECT_DIR$/android.iml" filepath="$PROJECT_DIR$/android.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/facebook/facebook.iml" filepath="$PROJECT_DIR$/facebook/facebook.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/routing/routing.iml" filepath="$PROJECT_DIR$/routing/routing.iml" />
+>>>>>>> 989b2ce31d7775e4badcc2b9e537ef3d877a7797
     </modules>
   </component>
 </project>

@@ -60,7 +60,23 @@
 
         <activity
             android:name=".PreferencesActivity"
-            android:label="@string/title_activity_preferences" >
+            android:label="@string/title_activity_preferences" />
+
+        <activity
+            android:name=".maps.MapModeSelect"
+            android:label="@string/title_activity_map_mode_select"
+            android:parentActivityName=".MyActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.coachksrun.MyActivity" />
+        </activity>
+        <activity
+            android:name=".maps.RouteSelection"
+            android:label="@string/title_activity_route_selection"
+            android:parentActivityName=".maps.MapModeSelect" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.coachksrun.maps.MapModeSelect" />
         </activity>
     </application>
 

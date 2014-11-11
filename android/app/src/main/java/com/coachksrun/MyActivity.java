@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.coachksrun.maps.MapModeSelect;
 import com.coachksrun.maps.MapsActivity;
 
 
@@ -40,7 +41,7 @@ public class MyActivity extends ListActivity {
                 startActivity(i);
                 break;
             case 2:
-                i = new Intent(MyActivity.this, MapsActivity.class);
+                i = new Intent(MyActivity.this, MapModeSelect.class);
                 startActivity(i);
                 break;
             case 3:

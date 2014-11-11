@@ -9,6 +9,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.coachksrun.R;
@@ -30,7 +31,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 
-public class MapsActivity extends Activity implements
+public class RouteSelection extends Activity implements
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener,
         LocationListener, RoutingListener {
@@ -46,16 +47,13 @@ public class MapsActivity extends Activity implements
 
     private GoogleMap map;
     private Marker currentMarker;
-    private MapStatsFragment mMapStats;
     private ArrayList<LatLng> latLngArray = new ArrayList<LatLng>();
-    private ArrayList<LatLng> mRouteLatLngArray;
     private ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
-    private ArrayList<PolylineOptions> mRoutePolylineOptionsArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_route_selection);
         mLocationClient = new LocationClient(this, this, this);
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(
@@ -63,17 +61,6 @@ public class MapsActivity extends Activity implements
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         // Set the fastest update interval to 1 second
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-
-        mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
-
-        // Get any routing information from RouteSelection activity
-        Intent intent = getIntent();
-        ArrayList<LatLng> ll = (ArrayList<LatLng>) intent.getSerializableExtra(EXTRA_LAT_LNG);
-        if (ll != null)
-            mRouteLatLngArray = ll;
-        ArrayList<PolylineOptions> p = (ArrayList<PolylineOptions>) intent.getSerializableExtra(EXTRA_POLYLINE);
-        if (p != null)
-            mRoutePolylineOptionsArray = p;
     }
 
 
@@ -90,8 +77,13 @@ public class MapsActivity extends Activity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id) {
+            case R.id.action_settings:
+                return true;
+            case android.R.id.home:
+                setRouteResult();
+                finish();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -120,18 +112,24 @@ public class MapsActivity extends Activity implements
 
         previousLocation = currentLocation;
 
-        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.routeSelect))
                 .getMap();
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                LatLng tempLL = new LatLng(previousLocation.getLatitude(), previousLocation.getLongitude());
+                //If latLngArray is empty, add current position and selected position
+                //Else route from last position in vector
+
+                if(latLngArray.size() == 0) {
+                    LatLng tempLL = new LatLng(previousLocation.getLatitude(), previousLocation.getLongitude());
+                    latLngArray.add(tempLL);
+                }
 
                 map.addMarker(new MarkerOptions()
                         .position(latLng));
                 Routing routing = new Routing(Routing.TravelMode.WALKING);
-                routing.registerListener(MapsActivity.this);
-                routing.execute(tempLL, latLng);
+                routing.registerListener(RouteSelection.this);
+                routing.execute(latLngArray.get(latLngArray.size() - 1), latLng);
 
                 latLngArray.add(latLng);
             }
@@ -141,11 +139,6 @@ public class MapsActivity extends Activity implements
                 .position(latLng)
                 .title("Current Location"));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
-
-        // Draw route from previously selected route
-        for (int i = 0; i < mRoutePolylineOptionsArray.size(); i++) {
-            map.addPolyline(mRoutePolylineOptionsArray.get(i));
-        }
     }
 
     @Override
@@ -168,7 +161,7 @@ public class MapsActivity extends Activity implements
         final float speed = getSpeed(previousLocation, location);
 
         currentMarker.setPosition(latLng);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+        //map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
 
         runOnUiThread(new Runnable() {
             @Override
@@ -176,15 +169,13 @@ public class MapsActivity extends Activity implements
                 String status = "Current Coordinates: " + location.getLatitude() + ", " +
                         location.getLongitude() + "\n" +
                         "Current Speed: " + speed + " mph";
-                mMapStats.setSpeed(status);
+                //mMapStats.setSpeed(status);
 
                 final double currentLatitude = location.getLatitude();
                 final double currentLongitude = location.getLongitude();
                 LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+                //map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
 
-                if (map != null && currentMarker != null)
-                    currentMarker.setPosition(currentLocation);
             }
         });
     }
@@ -218,5 +209,37 @@ public class MapsActivity extends Activity implements
         map.addPolyline(polyoptions);
 
         polylineOptionsArray.add(mPolyOptions);
+    }
+
+    public void clearRoute(View view) {
+        LatLng latLng = currentMarker.getPosition();
+        map.clear();
+        latLngArray.clear();
+        polylineOptionsArray.clear();
+        currentMarker = map.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title("Current Location"));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
+    }
+
+    public void goHome(View view) {
+        if(latLngArray.size() > 2) {
+            LatLng latLng = latLngArray.get(0);
+
+            map.addMarker(new MarkerOptions()
+                    .position(latLng));
+            Routing routing = new Routing(Routing.TravelMode.WALKING);
+            routing.registerListener(RouteSelection.this);
+            routing.execute(latLngArray.get(latLngArray.size() - 1), latLng);
+
+            latLngArray.add(latLng);
+        }
+    }
+
+    public void setRouteResult() {
+        Intent data = new Intent();
+        data.putExtra(EXTRA_LAT_LNG, latLngArray);
+        data.putExtra(EXTRA_POLYLINE, polylineOptionsArray);
+        setResult(RESULT_OK, data);
     }
 }

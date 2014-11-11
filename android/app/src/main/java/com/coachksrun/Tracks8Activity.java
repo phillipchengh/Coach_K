@@ -1,23 +1,34 @@
 package com.coachksrun;
 import com.coachksrun.Tracks8.MusicService;
+import com.coachksrun.Tracks8.PlaylistDbHelper;
 import com.coachksrun.Tracks8.utility;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.AdapterView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,33 +36,61 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
+import java.nio.DoubleBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
 import java.net.URL;
 import java.net.HttpURLConnection;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class Tracks8Activity extends Activity
 {
-    public String g_play_token;
-    public String g_mix_id;
-    public MediaPlayer g_media_player = null;
+    public String g_play_token = null;
+    public String g_mix_id = null;
+    public String g_genre = null;
     private LocalBroadcastManager g_broadcast_manager = null;
+    private MusicService m_MusicService = null;
+    private ServiceConnection m_serviceConn = null;
+    private boolean m_bound = false;
+
+    private PlaylistDbHelper m_dbHelper = null;
+    private SQLiteDatabase m_db = null;
+
+    private GotMixIdAndPlayToken_BroadcastReceiver m_mixid_playtoken_broadcast_receiver = null;
+    private ServiceToActivity_BroadcastReceiver m_srv_to_act_broadcast_receiver = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         g_broadcast_manager = LocalBroadcastManager.getInstance(getApplicationContext());
-        IntentFilter broadcast_mgr_intent_filter = new IntentFilter();
-        broadcast_mgr_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
+        IntentFilter got_mixid_playtoken_intent_filter = new IntentFilter();
+	got_mixid_playtoken_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
+	m_mixid_playtoken_broadcast_receiver = new GotMixIdAndPlayToken_BroadcastReceiver();
         g_broadcast_manager.registerReceiver(
-                new GotMixIdAndPlayToken_BroadcastReceiver(), broadcast_mgr_intent_filter);
+	     m_mixid_playtoken_broadcast_receiver, got_mixid_playtoken_intent_filter);
+        IntentFilter srv_to_act_filter = new IntentFilter();
+        srv_to_act_filter.addAction(utility.TRACK_NAME_ACTION);
+        srv_to_act_filter.addAction(utility.REPORT_ACTION);
+        srv_to_act_filter.addAction(utility.STOP_SERVICE_ACTION);
+	m_srv_to_act_broadcast_receiver = new ServiceToActivity_BroadcastReceiver();
+        g_broadcast_manager.registerReceiver(
+	     m_srv_to_act_broadcast_receiver, srv_to_act_filter);
+
         setContentView(R.layout.activity_tracks8);
 
         // Lets user choose genre, choose playlist (get play_token and mix_id), and start streaming.
         SetupMusicService();
+        //setupSQLiteDB();
+    }
+
+    public void setupSQLiteDB()
+    {
+        m_dbHelper = new PlaylistDbHelper(this);
+        m_db = m_dbHelper.getWritableDatabase();
     }
 
     /**
@@ -70,39 +109,49 @@ public class Tracks8Activity extends Activity
         final String[] genre_tags = genre_name_to_tag.keySet().toArray(new String[0]);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 getApplicationContext(), android.R.layout.simple_list_item_1, genre_tags);
-        ListView list_view = (ListView) findViewById(R.id.tracks8_playlists_selection_list);
-        list_view.setBackgroundColor(Color.BLACK);
+        final ListView list_view = (ListView) findViewById(
+	    R.id.tracks8_playlists_selection_list);
         list_view.setAdapter(adapter);
 
         // Gets chosen genre tag.
-        AdapterView.OnItemClickListener genreClickedHandler = new AdapterView
-                .OnItemClickListener() {
-            public void onItemClick(AdapterView parent, View v, int position, long id) {
+        AdapterView.OnItemClickListener genreClickedHandler = new AdapterView.OnItemClickListener() {
+		public void onItemClick(
+                  AdapterView parent, View v, int position, long id) {
+		    // 1a) Get mix id.
+		    // User chose this; stream this mix!
+		    String chosen_tag = genre_name_to_tag.get(
+			genre_tags[position]);
+		    System.out.println("Chosen genre tag: " + chosen_tag);
+            g_genre = chosen_tag;
+		    String genre_url = String.format(
+			utility.URL_GENRE, chosen_tag);
+		    
+		    URL url;
+		    try 
+		    {
+			url = new URL(genre_url);
+		    }
+		    catch (Exception e) 
+		    {
+			System.err.println(
+			    "Couldn't form url object: " + e.getMessage());
+			return;
+		    }
+		    URL[] urls = {url};
+		    System.out.println(
+		        "Executing GetSelectedPlaylistMixId task....");
+		    (new GetSelectedPlaylistMixId()).execute(urls);
+		    
+		    // 1b) Get play token.
+		    System.out.println("Executing GetPlayToken task....");
+		    (new GetPlayToken()).execute();
 
-                // 1a) Get mix id.
-                // User chose this; stream this mix!
-                String chosen_tag = genre_name_to_tag.get(genre_tags[position]);
-                System.out.println("Chosen genre tag: " + chosen_tag);
-                String genre_url = String.format(utility.URL_GENRE, chosen_tag);
-
-                URL url;
-                try {
-                    url = new URL(genre_url);
-                }
-                catch (Exception e) {
-                    System.err.println("Couldn't form url object: " + e.getMessage());
-                    return;
-                }
-                URL[] urls = {url};
-                System.out.println("Executing GetSelectedPlaylistMixId task....");
-                (new GetSelectedPlaylistMixId()).execute(urls);
-
-                // 1b) Get play token.
-                System.out.println("Executing GetPlayToken task....");
-                (new GetPlayToken()).execute();
-
-            }
-        };
+		    list_view.setAdapter(null);
+		    TextView tview = (TextView) findViewById(R.id.track_name);
+		    tview.setVisibility(View.VISIBLE);
+		    tview.setText(utility.LOADING_TEXT);
+		}
+	    };
         list_view.setOnItemClickListener(genreClickedHandler);
     }
 
@@ -159,9 +208,11 @@ public class Tracks8Activity extends Activity
             final String[] mix_names = mix_id_names.keySet().toArray(new String[0]);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                     getApplicationContext(), android.R.layout.simple_list_item_1, mix_names);
-            ListView list_view = (ListView) findViewById(R.id.tracks8_playlists_selection_list);
-            list_view.setBackgroundColor(Color.BLACK);
+            final ListView list_view = (ListView) findViewById(R.id.tracks8_playlists_selection_list);
             list_view.setAdapter(adapter);
+	    TextView tview = (TextView) findViewById(R.id.track_name);
+	    tview.setVisibility(View.INVISIBLE);
+	    
 
             // Gets chosen mix with id for streaming.
             AdapterView.OnItemClickListener mixClickedHandler = new AdapterView
@@ -177,7 +228,11 @@ public class Tracks8Activity extends Activity
                     g_broadcast_manager.sendBroadcast(got_mix_id_intent);
 
                     System.out.println("MIX ID gotten: " + g_mix_id);
+		    list_view.setAdapter(null);
 
+		    // Show pause-next-stop buttons.
+		    LinearLayout llview = (LinearLayout) findViewById(R.id.track_control_buttons);
+		    llview.setVisibility(View.VISIBLE);
                 }
             };
             list_view.setOnItemClickListener(mixClickedHandler);
@@ -236,10 +291,8 @@ public class Tracks8Activity extends Activity
 
             // Finally have both play token and mix id, so can start music service.
             StartMusicService(play_token, mix_id);
-
         }
     }
-
 
     /**
      * Plays chosen track. On track completion should fetch next track if possible.
@@ -249,6 +302,8 @@ public class Tracks8Activity extends Activity
      */
     public void StartMusicService(String play_token, String mix_id)
     {
+        g_play_token = play_token;
+        g_mix_id = mix_id;
         Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("PLAY_TOKEN", play_token);
         intent.putExtra("MIX_ID", mix_id);
@@ -257,15 +312,157 @@ public class Tracks8Activity extends Activity
         try
         {
             this.startService(intent);
+            m_serviceConn = new ServiceConnection() {
+
+                public void onServiceConnected(ComponentName className, IBinder binder)
+                {
+                    MusicService.LocalBinder serviceBinder = (MusicService.LocalBinder) binder;
+                    m_MusicService = serviceBinder.getService();
+                    m_bound = true;
+                }
+
+                public void onServiceDisconnected(ComponentName className) {
+                    m_MusicService = null;
+                    m_bound = false;
+                }
+            };
+
+            bindService(intent, m_serviceConn,Context.BIND_AUTO_CREATE);
         }
-        catch(Exception e)
+        catch(Exception e) {
+            System.err.println("Exception in processFinish(): " + e.getMessage());
+        }
+
+        /*
+        ContentValues values = new ContentValues();
+        values.put(PlaylistDbHelper.COLUMN_NAME_GENRE, g_genre);
+        values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, g_mix_id);
+
+        long newRowId = m_db.insert(PlaylistDbHelper.TABLE_NAME, null, values);
+
+        Cursor c = m_db.query(PlaylistDbHelper.TABLE_NAME, null, null, null, null, null, null, null);
+
+        if( c.moveToFirst() )
         {
-            System.err.println("Exception in processFinish(): "+e.getMessage());
+            System.out.println("SQLiteDB - Genre: "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_GENRE))+", MixID: "+c.getInt(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
+        }
+        else
+        {
+            System.out.println("SQLiteDB is empty");
+        }
+
+        while( c.moveToNext() )
+        {
+            System.out.println("SQLiteDB - Genre: "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_GENRE))+", MixID: "+c.getInt(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
+        }
+        */
+    }
+
+    /**
+     * Respond to Pause button click event.
+     */
+    public void pauseClicked(View view)
+    {
+	m_MusicService.pauseTrack();
+    }
+
+    /**
+     * Respond to Skip button click event.
+     */
+    public void skipClicked(View view)
+    {
+	m_MusicService.skipTrack();
+    }
+
+    /**
+     * Respond to Stop button click event.
+     */
+    public void stopClicked(View view)
+    {
+	finish();
+    }
+
+    /**
+     * Go back to main menu after cleaning up music service.
+     *
+     * Called by things like finish()
+     */
+    public void onDestroy() 
+    {
+	if (null != m_MusicService)
+	{
+	    m_MusicService.releaseMediaPlayer();
+	    m_MusicService.stopService(new Intent(this, MusicService.class));
+	    m_MusicService = null;
+	    unbindService(m_serviceConn);
+	}
+	TextView tview = (TextView) findViewById(R.id.track_name);
+	tview.setVisibility(View.GONE);
+
+	g_broadcast_manager.unregisterReceiver(m_mixid_playtoken_broadcast_receiver);
+	g_broadcast_manager.unregisterReceiver(m_srv_to_act_broadcast_receiver);
+
+	super.onDestroy();
+    }
+
+    private class ServiceToActivity_BroadcastReceiver extends BroadcastReceiver
+    {
+	public void onReceive(Context context, Intent intent)
+	{
+	    String action = intent.getAction();
+	    System.out.println(">>>> " + action);
+	    if (utility.TRACK_NAME_ACTION == action)
+	    {
+		String track_name = intent.getStringExtra("track_name");
+		System.out.println("Got track name:" + track_name);
+		TextView textview = (TextView) findViewById(R.id.track_name);
+		textview.setText(track_name);
+		textview.setBackgroundColor(Color.BLACK);
+		textview.setTextColor(Color.WHITE);
+		textview.setVisibility(View.VISIBLE);
+	    }
+	    else if (utility.STOP_SERVICE_ACTION == action)
+	    {
+		finish();
+	    }
+	    else if (utility.REPORT_ACTION == action)
+	    {
+		try 
+		{
+		    String reporting_url = intent.getStringExtra("report_url");
+		    System.out.println("Reporting url: " + reporting_url);
+		    URL url = new URL(reporting_url);
+		    (new ReportTo8Tracks()).execute(url);
+		}
+		catch (Exception e)
+		{
+		    System.err.println("Malformed reporting url");
+		}
+	    }
+	}
+    }
+ 
+    private class ReportTo8Tracks extends AsyncTask<URL, Void, Void> {
+
+        protected Void doInBackground(URL... params) {
+            try
+            {
+                URL url = params[0];
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection = utility.SetUp8tracks(urlConnection);
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                String response = utility.readStream(in);
+                urlConnection.disconnect();
+            }
+            catch(Exception e)
+            {
+                System.err.println("Error reporting to 8tracks: "+e.getMessage());
+            }
+	    return null;
         }
     }
 
-
-    @Override
+   @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.tracks8, menu);
@@ -284,5 +481,3 @@ public class Tracks8Activity extends Activity
         return super.onOptionsItemSelected(item);
     }
 }
-
-
