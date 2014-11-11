@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.coachksrun.Tracks8.utility;
@@ -31,8 +33,11 @@ public class PreferencesActivity extends Activity {
         status = getIntent().getStringExtra("status");
         TextView status_textview = (TextView) findViewById(R.id.status_textview);
         status_textview.setText("id: " + fb_user_id + " status: " + status);
+        Spinner genre_spinner = (Spinner) findViewById(R.id.genre_spinner);
+        ArrayAdapter<CharSequence> genre_adapter = ArrayAdapter.createFromResource(this, R.array.genres, android.R.layout.simple_spinner_item);
+        genre_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        genre_spinner.setAdapter(genre_adapter);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
