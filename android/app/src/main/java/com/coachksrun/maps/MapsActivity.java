@@ -48,7 +48,9 @@ public class MapsActivity extends Activity implements
     private Marker currentMarker;
     private MapStatsFragment mMapStats;
     private ArrayList<LatLng> latLngArray = new ArrayList<LatLng>();
+    private ArrayList<LatLng> mRouteLatLngArray;
     private ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
+    private ArrayList<PolylineOptions> mRoutePolylineOptionsArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +66,14 @@ public class MapsActivity extends Activity implements
 
         mMapStats = (MapStatsFragment) getFragmentManager().findFragmentById(R.id.map_stats);
 
-        Intent i = getIntent();
-        ArrayList<LatLng> ll = (ArrayList<LatLng>) i.getSerializableExtra(EXTRA_LAT_LNG);
+        // Get any routing information from RouteSelection activity
+        Intent intent = getIntent();
+        ArrayList<LatLng> ll = (ArrayList<LatLng>) intent.getSerializableExtra(EXTRA_LAT_LNG);
         if (ll != null)
-            latLngArray = ll;
-        ArrayList<PolylineOptions> p = (ArrayList<PolylineOptions>) i.getSerializableExtra(EXTRA_POLYLINE);
+            mRouteLatLngArray = ll;
+        ArrayList<PolylineOptions> p = (ArrayList<PolylineOptions>) intent.getSerializableExtra(EXTRA_POLYLINE);
         if (p != null)
-            polylineOptionsArray = p;
+            mRoutePolylineOptionsArray = p;
     }
 
 
@@ -138,6 +141,11 @@ public class MapsActivity extends Activity implements
                 .position(latLng)
                 .title("Current Location"));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
+
+        // Draw route from previously selected route
+        for (int i = 0; i < mRoutePolylineOptionsArray.size(); i++) {
+            map.addPolyline(mRoutePolylineOptionsArray.get(i));
+        }
     }
 
     @Override
