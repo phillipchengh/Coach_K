@@ -1,4 +1,4 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,6 +10,29 @@
     tools:context="com.coachksrun.maps.MapsActivity">
 
     <LinearLayout
+        android:id="@+id/map_fragments"
+        android:orientation="vertical"
+        android:layout_weight="0.8"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:name="com.google.android.gms.maps.MapFragment"
+            android:visibility="gone"/>
+
+        <fragment
+            android:id="@+id/map_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:name="com.coachksrun.maps.MapStatsFragment"/>
+
+     </LinearLayout>
+
+    <LinearLayout
+       android:layout_below="@id/map_fragments"
         android:orientation="vertical"
         android:layout_weight="0.2"
         android:layout_width="match_parent"
@@ -26,16 +49,15 @@
         <LinearLayout
             android:layout_below="@id/track_name"
             android:id="@+id/track_control_buttons"
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/button_pause"
-                android:layout_width="0dp"
+                android:layout_width="0dip"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.3"
+	        android:layout_weight="0.3"
                 android:text="@string/tracks8_pause"
                 android:textColor="#FFF"
                 android:background="#000"
@@ -43,9 +65,9 @@
 
             <Button
                 android:id="@+id/button_next"
-                android:layout_width="0dp"
+                android:layout_width="0dip"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.3"
+	        android:layout_weight="0.3"
                 android:text="@string/tracks8_next"
                 android:textColor="#FFF"
                 android:background="#000"
@@ -53,41 +75,15 @@
 
             <Button
                 android:id="@+id/button_stop"
-                android:layout_width="0dp"
+                android:layout_width="0dip"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.3"
+	        android:layout_weight="0.3"
                 android:text="@string/tracks8_stop"
                 android:textColor="#FFF"
                 android:background="#000"
                 android:onClick="musicStopClicked" />
 
         </LinearLayout>
-
     </LinearLayout>
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_weight="0.8"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <fragment
-            android:id="@+id/map"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:name="com.google.android.gms.maps.MapFragment"
-            android:layout_weight="0.5"
-            android:visibility="gone"/>
-
-        <fragment
-            android:id="@+id/map_stats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight = "0.15"
-            android:name="com.coachksrun.maps.MapStatsFragment"/>
-
-     </LinearLayout>
-
-
-
-</ScrollView>
+</LinearLayout>
