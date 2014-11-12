@@ -2,24 +2,15 @@ package com.coachksrun;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.coachksrun.Tracks8.utility;
 import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.model.GraphUser;
-
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 
 public class LoginActivity extends Activity {
@@ -48,7 +39,9 @@ public class LoginActivity extends Activity {
                         public void onCompleted(GraphUser user, Response response) {
                             if (user != null) {
                                 graph_user = user;
-                                (new CheckUser()).execute();
+                                Intent intent = new Intent(LoginActivity.this, MenuActivity.class);
+                                intent.putExtra("fb_user_id", graph_user.getId());
+                                startActivity(intent);
                             }
                         }
                     }).executeAsync();
@@ -56,56 +49,6 @@ public class LoginActivity extends Activity {
             }
         });
     }
-
-
-    private class CheckUser extends AsyncTask<Void, Void, JSONObject> {
-
-        protected JSONObject doInBackground(Void... params) {
-            JSONObject student = null;
-            try {
-                String url_string = "https://coach-k-server.herokuapp.com/student?user_id=" + graph_user.getId();
-                URL url = new URL(url_string);
-
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                student = new JSONObject(utility.readStream(in));
-                urlConnection.disconnect();
-            } catch (Exception e) {
-                System.err.println("Error: " + e.getMessage());
-                e.printStackTrace();
-            }
-            return student;
-        }
-
-        protected void onPostExecute(JSONObject student) {
-            if (student == null) {
-                System.err.println("User response was null");
-                return;
-            }
-            try {
-                String status = student.getString("status");
-                Intent intent;
-                if (status.equals("unregistered")) {
-                    intent = new Intent(LoginActivity.this, PreferencesActivity.class);
-                    intent.putExtra("fb_user_id", graph_user.getId());
-                    intent.putExtra("status", "unregistered");
-                    startActivity(intent);
-                } else {
-                    intent = new Intent(LoginActivity.this, PreferencesActivity.class);
-                    intent.putExtra("fb_user_id", graph_user.getId());
-                    intent.putExtra("status", "registered");
-                    startActivity(intent);
-                }
-            } catch (Exception e) {
-                System.err.println("Error: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

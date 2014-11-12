@@ -19,14 +19,14 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/title_textview"
-        android:text="Status"
+        android:text="User"
         android:gravity="top|center_horizontal"
-        android:id="@+id/status_textview" />
+        android:id="@+id/user_textview" />
 
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/status_textview"
+        android:layout_below="@+id/user_textview"
         android:id="@+id/genre_spinner" />
 
     <TextView
@@ -44,10 +44,17 @@
         android:id="@+id/pace_seekbar" />
 
     <Button
-        android:text="Submit"
+        android:text="Save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/pace_seekbar"
-        android:id="@+id/submit_button" />
+        android:id="@+id/save_button"/>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text=""
+        android:id="@+id/status_textview" />
 
 </RelativeLayout>
