@@ -11,6 +11,7 @@ import android.widget.ListView;
 
 import com.coachksrun.maps.MapModeSelect;
 import com.coachksrun.maps.MapsActivity;
+import com.coachksrun.maps.RouteSelection;
 
 
 public class MyActivity extends ListActivity {
@@ -20,7 +21,7 @@ public class MyActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
 
-        String[] items = { "login", "8tracks", "maps", "yelp" };
+        String[] items = { "login", "Preferences", "Destination run", "yelp" };
         setListAdapter(new ArrayAdapter<String>(
                 getApplicationContext(),
                 android.R.layout.simple_list_item_1,
@@ -41,7 +42,7 @@ public class MyActivity extends ListActivity {
                 startActivity(i);
                 break;
             case 2:
-                i = new Intent(MyActivity.this, MapModeSelect.class);
+                i = new Intent(MyActivity.this, RouteSelection.class);
                 startActivity(i);
                 break;
             case 3:

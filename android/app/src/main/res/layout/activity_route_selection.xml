@@ -34,7 +34,12 @@
             android:text="Clear All"
             android:onClick="clearRoute"/>
 
-
+        <Button
+            android:id="@+id/startRoute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            android:onClick="startRoute"/>
     </LinearLayout>
 
 </LinearLayout>
