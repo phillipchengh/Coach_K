@@ -61,7 +61,6 @@
         <activity
             android:name=".PreferencesActivity"
             android:label="@string/title_activity_preferences" />
-
         <activity
             android:name=".maps.MapModeSelect"
             android:label="@string/title_activity_map_mode_select"
@@ -77,6 +76,10 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.coachksrun.maps.MapModeSelect" />
+        </activity>
+        <activity
+            android:name=".MenuActivity"
+            android:label="@string/title_activity_menu" >
         </activity>
     </application>
 
