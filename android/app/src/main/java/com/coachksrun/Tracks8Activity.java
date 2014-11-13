@@ -51,10 +51,6 @@ public class Tracks8Activity extends Activity
     public String g_play_token = null;
     public String g_mix_id = null;
     public String g_genre = null;
-    private LocalBroadcastManager g_broadcast_manager = null;
-    private MusicService m_MusicService = null;
-    private ServiceConnection m_serviceConn = null;
-    private boolean m_bound = false;
 
     private PlaylistDbHelper m_dbHelper = null;
     private SQLiteDatabase m_db = null;
@@ -68,7 +64,7 @@ public class Tracks8Activity extends Activity
 
         // Lets user choose genre, choose playlist (get play_token and mix_id), and start streaming.
         SetupMusicService();
-        //setupSQLiteDB();
+        setupSQLiteDB();
     }
 
     public void setupSQLiteDB()
@@ -77,10 +73,9 @@ public class Tracks8Activity extends Activity
         m_db = m_dbHelper.getWritableDatabase();
     }
 
-
     /**
      * Displays genres. Kicks off two asynchronous tasks:
-     * 1a) Display popular playlists, let user pick, and get that playlist's mix_id.
+     * 1a) Once user picks genre, fetch first mix id.
      * 1b) Get play token id.
      */
     private void SetupMusicService() {
@@ -160,81 +155,28 @@ public class Tracks8Activity extends Activity
                 System.err.println("Couldn't get any mixes");
                 return;
             }
-            // Get Ids and Names of mixes.
-            final Map<String, String> mix_id_names;
+
             try {
                 JSONArray mixes = mixes_json.getJSONArray("mixes");
-                int number_of_mixes = mixes.length();
-                mix_id_names = new HashMap<String, String>();
-                for (int i = 0; i < number_of_mixes && i < utility.CAP_NUM_MIXES; i++) {
-                    JSONObject mix = mixes.getJSONObject(i);
-                    mix_id_names.put(mix.getString("name"), mix.getString("id"));
-                }
+		JSONObject first_mix = mixes.getJSONObject(0);
+		String first_mixid = first_mix.getString("id");
+		g_mix_id = first_mixid;
+
+		// Rewrite mix id saved in db.
+		m_db.delete(PlaylistDbHelper.TABLE_NAME, null, null);
+
+		ContentValues values = new ContentValues();
+		values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, g_mix_id);
+		m_db.insert(PlaylistDbHelper.TABLE_NAME, null, values);
+
+		finish();
+
             } catch (Exception e) {
                 System.err.println("Malformed mixes json: " + mixes_json.toString());
                 return;
             }
-            System.out.println(mix_id_names);
-            // Displays possible mix names to user.
-            final String[] mix_names = mix_id_names.keySet().toArray(new String[0]);
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                    getApplicationContext(), android.R.layout.simple_list_item_1, mix_names);
-            final ListView list_view = (ListView) findViewById(R.id.tracks8_playlists_selection_list);
-            list_view.setAdapter(adapter);
-            TextView tview = (TextView) findViewById(R.id.track_name);
-            tview.setVisibility(View.INVISIBLE);
-
-            // Gets chosen mix with id for streaming.
-            AdapterView.OnItemClickListener mixClickedHandler = new AdapterView
-                    .OnItemClickListener() {
-                public void onItemClick(AdapterView parent, View v, int position, long id) {
-                    // User chose this; stream this mix!
-                    g_mix_id = mix_id_names.get(mix_names[position]);
-                    System.out.println("Chosen id: " + g_mix_id);
-                    /*
-                    Intent got_mix_id_intent = new Intent();
-                    got_mix_id_intent.setAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
-                    got_mix_id_intent.putExtra("mix_id", g_mix_id);
-                    //g_broadcast_manager.sendBroadcast(got_mix_id_intent);
-                    */
-
-                    // SAVE MIX_ID TO DB
-
-
-                    System.out.println("MIX ID gotten: " + g_mix_id);
-                    list_view.setAdapter(null);
-                    // Show pause-next-stop buttons.
-                    LinearLayout llview = (LinearLayout) findViewById(R.id.track_control_buttons);
-                    llview.setVisibility(View.VISIBLE);
-                }
-            };
-            list_view.setOnItemClickListener(mixClickedHandler);
         }
     }
-
-
-    /**
-     * Go back to main menu after cleaning up music service.
-     *
-     * Called by things like finish()
-     */
-    public void onDestroy() 
-    {
-        if (null != m_MusicService)
-        {
-            m_MusicService.releaseMediaPlayer();
-            m_MusicService.stopService(new Intent(this, MusicService.class));
-            m_MusicService = null;
-            unbindService(m_serviceConn);
-        }
-        TextView tview = (TextView) findViewById(R.id.track_name);
-        tview.setVisibility(View.GONE);
-
-
-        super.onDestroy();
-    }
-
-
 
    @Override
     public boolean onCreateOptionsMenu(Menu menu) {

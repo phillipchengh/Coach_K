@@ -17,6 +17,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.widget.TextView;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -43,12 +46,19 @@ public class MusicPlayer {
     private ServiceToActivity_BroadcastReceiver m_srv_to_act_broadcast_receiver = null;
     private GotMixIdAndPlayToken_BroadcastReceiver m_playtoken_mixid_broadcast_receiver = null;
 
+
+    private PlaylistDbHelper m_dbHelper = null;
+    private SQLiteDatabase m_db = null;
+
+
     public void SetupMusicService(Activity callerActivity)
     {
         m_callerActivity = callerActivity;
         m_callerBroadcastManager = LocalBroadcastManager.getInstance(m_callerActivity.getApplicationContext());
 
         (new GetPlayToken()).execute();
+
+	setupSQLiteDB();
     }
 
     /**
@@ -90,29 +100,6 @@ public class MusicPlayer {
             System.err.println("Exception in processFinish(): " + e.getMessage());
         }
 
-        /*
-        ContentValues values = new ContentValues();
-        values.put(PlaylistDbHelper.COLUMN_NAME_GENRE, g_genre);
-        values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, g_mix_id);
-
-        long newRowId = m_db.insert(PlaylistDbHelper.TABLE_NAME, null, values);
-
-        Cursor c = m_db.query(PlaylistDbHelper.TABLE_NAME, null, null, null, null, null, null, null);
-
-        if( c.moveToFirst() )
-        {
-            System.out.println("SQLiteDB - Genre: "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_GENRE))+", MixID: "+c.getInt(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
-        }
-        else
-        {
-            System.out.println("SQLiteDB is empty");
-        }
-
-        while( c.moveToNext() )
-        {
-            System.out.println("SQLiteDB - Genre: "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_GENRE))+", MixID: "+c.getInt(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
-        }
-        */
     }
 
     /**
@@ -259,8 +246,6 @@ public class MusicPlayer {
 
             System.out.println("PLAY TOKEN gotten: " + m_play_token);
 
-
-
             Intent got_play_token_intent = new Intent();
             got_play_token_intent.setAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
             got_play_token_intent.putExtra("play_token", m_play_token);
@@ -272,24 +257,49 @@ public class MusicPlayer {
     private class GotMixIdAndPlayToken_BroadcastReceiver extends BroadcastReceiver
     {
         private String play_token = null;
-        private String mix_id = "5130631";
+        private String mix_id = null;
 
         public void onReceive(Context context, Intent intent)
         {
             String tmp_play_token = intent.getStringExtra("play_token");
-            String tmp_mix_id = intent.getStringExtra("mix_id");
             play_token = (null != tmp_play_token) ? tmp_play_token : play_token;
-            mix_id = (null != tmp_mix_id) ? tmp_mix_id : mix_id;
-
-            if (null == play_token || null == mix_id)
+            if (null == play_token)
             {
                 return;
             }
+
+	    // Fetch MIX_ID from DB
+	    mix_id = GetMixIdToPlay();
 
             // Finally have both play token and mix id, so can start music service.
             StartMusicService(play_token, mix_id);
         }
     }
 
+    private String GetMixIdToPlay()
+    {
+        Cursor c = m_db.query(PlaylistDbHelper.TABLE_NAME, null, null, null, null, null, null);
+
+	String mix_id = null;
+        if( c.moveToFirst() )
+        {
+            System.out.println("SQLiteDB - Mix id "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
+	    mix_id = c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID));
+        }
+        else
+        {
+            System.out.println("SQLiteDB is empty");
+	    mix_id = "5130631"; // DEFAULT HIP HOP playlist in case of fail.
+        }
+
+	c.close();
+	return mix_id;
+    }
+
+    public void setupSQLiteDB()
+    {
+        m_dbHelper = new PlaylistDbHelper(m_callerActivity);
+        m_db = m_dbHelper.getWritableDatabase();
+    }
 
 }

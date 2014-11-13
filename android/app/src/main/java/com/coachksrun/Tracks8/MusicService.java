@@ -35,7 +35,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private final IBinder m_Binder = new LocalBinder();
 
     private LocalBroadcastManager m_broadcast_manager = null;
-    private MusicService_BroadcastReceiver m_broadcast_receiver = null;
 
     public void pauseTrack()
     {
@@ -92,15 +91,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 	m_playToken = null;
 	m_intent = null;
 	releaseMediaPlayer();
-        this.unregisterReceiver(m_broadcast_receiver);
-    }
-
-    private class MusicService_BroadcastReceiver extends BroadcastReceiver
-    {
-        public void onReceive(Context context, Intent intent)
-        {
-            m_mediaPlayer.stop();
-        }
     }
 
     public int onStartCommand(Intent intent, int flags, int startId)
@@ -108,11 +98,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         m_intent = intent;
 	m_broadcast_manager = LocalBroadcastManager.getInstance(
 				getApplicationContext());
-
-        IntentFilter broadcast_mgr_intent_filter = new IntentFilter();
-        broadcast_mgr_intent_filter.addAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
-	m_broadcast_receiver = new MusicService_BroadcastReceiver();
-        this.registerReceiver(m_broadcast_receiver, broadcast_mgr_intent_filter);
 
         m_playToken = intent.getStringExtra("PLAY_TOKEN");
         m_mixID = intent.getStringExtra("MIX_ID");
