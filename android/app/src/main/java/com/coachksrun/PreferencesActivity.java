@@ -159,18 +159,20 @@ public class PreferencesActivity extends Activity {
 
         protected void onPostExecute(JSONObject student) {
             if (student == null) {
-                System.err.println("User response was null");
+                updateStatusTextView("Unable to get server response.");
                 return;
             }
             try {
                 String status = student.getString("status");
                 if (status.equals("error")) {
                     updateStatusTextView("Error getting user.");
-                } else {
+                } else if (status.equals("success")) {
                     updateStatusTextView("");
                     JSONArray data = student.getJSONArray("data");
                     updatePreferences(data);
                     initListeners();
+                } else {
+                    updateStatusTextView("An unknown error occurred.");
                 }
             } catch (Exception e) {
                 System.err.println("Error: " + e.getMessage());
@@ -216,18 +218,20 @@ public class PreferencesActivity extends Activity {
 
         protected void onPostExecute(JSONObject student) {
             if (student == null) {
-                System.err.println("User response was null");
+                updateStatusTextView("Server error occurred.");
                 return;
             }
             try {
                 String status = student.getString("status");
                 if (status.equals("error")) {
                     updateStatusTextView("Error putting user.");
-                } else {
+                } else if (status.equals("success")) {
                     updateStatusTextView("Saved.");
                     JSONArray data = student.getJSONArray("data");
                     updatePreferences(data);
                     initListeners();
+                } else {
+                    updateStatusTextView("An unknown error occurred.");
                 }
             } catch (Exception e) {
                 System.err.println("Error: " + e.getMessage());

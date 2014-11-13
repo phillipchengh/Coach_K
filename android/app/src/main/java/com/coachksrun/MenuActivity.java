@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.coachksrun.Tracks8.utility;
 import com.coachksrun.maps.MapModeSelect;
@@ -31,6 +32,11 @@ public class MenuActivity extends Activity {
         setContentView(R.layout.activity_menu);
         fb_user_id = getIntent().getStringExtra("fb_user_id");
         (new CheckUser()).execute();
+    }
+
+    private void updateStatusTextView(String msg) {
+        TextView status_textview = (TextView) findViewById(R.id.status_textview);
+        status_textview.setText(msg);
     }
 
     private void initListeners() {
@@ -83,8 +89,12 @@ public class MenuActivity extends Activity {
                 String status = student.getString("status");
                 if (status.equals("unregistered")) {
                     (new CreateUser()).execute();
-                } else {
+                } else if (status.equals("error")) {
+                    updateStatusTextView("Error checking user.");
+                } else if (status.equals("success")) {
                     initListeners();
+                } else {
+                    updateStatusTextView("An unknown error occurred.");
                 }
             } catch (Exception e) {
                 System.err.println("Error: " + e.getMessage());
@@ -129,11 +139,23 @@ public class MenuActivity extends Activity {
                 System.err.println("User response was null");
                 return;
             }
-            initListeners();
-            Intent intent = new Intent(MenuActivity.this, PreferencesActivity.class);
-            intent.putExtra("fb_user_id", fb_user_id);
-            intent.putExtra("status", "new");
-            startActivity(intent);
+            try {
+                String status = student.getString("status");
+                if (status.equals("error")) {
+                    updateStatusTextView("Error checking user.");
+                } else if (status.equals("success")) {
+                    initListeners();
+                    Intent intent = new Intent(MenuActivity.this, PreferencesActivity.class);
+                    intent.putExtra("fb_user_id", fb_user_id);
+                    intent.putExtra("status", "new");
+                    startActivity(intent);
+                } else {
+                    updateStatusTextView("An unknown error occurred.");
+                }
+            } catch (Exception e) {
+                System.err.println("Error: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
