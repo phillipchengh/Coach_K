@@ -80,7 +80,7 @@ public class PreferencesActivity extends Activity {
 
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                updateStatusTextView("Updated item: " + adapterView.getItemAtPosition(i));
+
             }
 
             @Override
@@ -95,7 +95,7 @@ public class PreferencesActivity extends Activity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 progress = i;
-                
+                updatePaceTextView(progressToPace(progress));
             }
 
             @Override
