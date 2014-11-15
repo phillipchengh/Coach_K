@@ -32,20 +32,14 @@ import java.net.URL;
  */
 public class MusicPlayer {
 
-    private String m_play_token = null;
-    private String m_mix_id = null;
     private MusicService m_MusicService = null;
-    private boolean m_bound = false;
-
-    private Activity m_callerActivity;
-
     private ServiceConnection m_serviceConn = null;
 
+    private Activity m_callerActivity;
     private LocalBroadcastManager m_callerBroadcastManager = null;
 
     private ServiceToActivity_BroadcastReceiver m_srv_to_act_broadcast_receiver = null;
     private GotMixIdAndPlayToken_BroadcastReceiver m_playtoken_mixid_broadcast_receiver = null;
-
 
     private PlaylistDbHelper m_dbHelper = null;
     private SQLiteDatabase m_db = null;
@@ -69,8 +63,6 @@ public class MusicPlayer {
      */
     public void StartMusicService(String play_token, String mix_id)
     {
-        m_play_token = play_token;
-        m_mix_id = mix_id;
         Intent intent = new Intent(m_callerActivity, MusicService.class);
         intent.putExtra("PLAY_TOKEN", play_token);
         intent.putExtra("MIX_ID", mix_id);
@@ -85,12 +77,10 @@ public class MusicPlayer {
                 {
                     MusicService.LocalBinder serviceBinder = (MusicService.LocalBinder) binder;
                     m_MusicService = serviceBinder.getService();
-                    m_bound = true;
                 }
 
                 public void onServiceDisconnected(ComponentName className) {
                     m_MusicService = null;
-                    m_bound = false;
                 }
             };
 
@@ -225,6 +215,7 @@ public class MusicPlayer {
     private class GetPlayToken extends AsyncTask<Void, Void, Void> {
 
         protected Void doInBackground(Void... params) {
+	    String play_token = null;
             try {
                 URL url = new URL("http://8tracks.com/sets/new.json?api_key=" + utility.DEV_KEY + "&api_version=3");
                 String user_agent = System.getProperty("http.agent");
@@ -237,18 +228,18 @@ public class MusicPlayer {
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
                 JSONObject reader = new JSONObject(utility.readStream(in));
-                m_play_token = reader.getString("play_token");
+                play_token = reader.getString("play_token");
                 urlConnection.disconnect();
             } catch (Exception e) {
                 System.err.println("FAILURE - Could not send HTTP GET Request: " + e.getMessage());
                 e.printStackTrace();
             }
 
-            System.out.println("PLAY TOKEN gotten: " + m_play_token);
+            System.out.println("PLAY TOKEN gotten: " + play_token);
 
             Intent got_play_token_intent = new Intent();
             got_play_token_intent.setAction(utility.MIX_ID_PLAY_TOKEN_ACTION);
-            got_play_token_intent.putExtra("play_token", m_play_token);
+            got_play_token_intent.putExtra("play_token", play_token);
             m_callerBroadcastManager.sendBroadcast(got_play_token_intent);
             return null;
         }
@@ -261,17 +252,19 @@ public class MusicPlayer {
 
         public void onReceive(Context context, Intent intent)
         {
-            String tmp_play_token = intent.getStringExtra("play_token");
-            play_token = (null != tmp_play_token) ? tmp_play_token : play_token;
-            if (null == play_token)
-            {
-                return;
-            }
+            play_token = intent.getStringExtra("play_token");
+	    if (null == play_token)
+	    {
+		return;
+	    }
 
 	    // Fetch MIX_ID from DB
-	    mix_id = GetMixIdToPlay();
+	    if (null == mix_id)
+	    {
+		mix_id = GetMixIdToPlay();
+	    }
 
-            // Finally have both play token and mix id, so can start music service.
+            // Finally have both play token & mix id, so start music service.
             StartMusicService(play_token, mix_id);
         }
     }

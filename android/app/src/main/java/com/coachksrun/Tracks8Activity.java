@@ -1,5 +1,4 @@
 package com.coachksrun;
-import com.coachksrun.Tracks8.MusicService;
 import com.coachksrun.Tracks8.PlaylistDbHelper;
 import com.coachksrun.Tracks8.utility;
 
@@ -48,9 +47,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Tracks8Activity extends Activity
 {
-    public String g_play_token = null;
-    public String g_mix_id = null;
-    public String g_genre = null;
+    private String m_mixId = null;
 
     private PlaylistDbHelper m_dbHelper = null;
     private SQLiteDatabase m_db = null;
@@ -62,8 +59,8 @@ public class Tracks8Activity extends Activity
 
         setContentView(R.layout.activity_tracks8);
 
-        // Lets user choose genre, choose playlist (get play_token and mix_id), and start streaming.
-        SetupMusicService();
+        // Lets user choose genre, get playlist (mix_id), and start streaming.
+	ChooseGenreAndGetMixId();
         setupSQLiteDB();
     }
 
@@ -74,12 +71,11 @@ public class Tracks8Activity extends Activity
     }
 
     /**
-     * Displays genres. Kicks off two asynchronous tasks:
-     * 1a) Once user picks genre, fetch first mix id.
-     * 1b) Get play token id.
+     * Displays genres.
+     * Once user picks genre, fetch first mix id.
+     * Store in db so that DuringRun activity can access it.
      */
-    private void SetupMusicService() {
-        // Let user choose genre.
+    private void ChooseGenreAndGetMixId() {
         final Map<String, String> genre_name_to_tag = new HashMap<String, String>();
         genre_name_to_tag.put("Hip hop", "hip_hop");
         genre_name_to_tag.put("Electronic", "electronic");
@@ -100,7 +96,6 @@ public class Tracks8Activity extends Activity
                 String chosen_tag = genre_name_to_tag.get(
                         genre_tags[position]);
                 System.out.println("Chosen genre tag: " + chosen_tag);
-                g_genre = chosen_tag;
                 String genre_url = String.format(
                         utility.URL_GENRE, chosen_tag);
 
@@ -159,14 +154,13 @@ public class Tracks8Activity extends Activity
             try {
                 JSONArray mixes = mixes_json.getJSONArray("mixes");
 		JSONObject first_mix = mixes.getJSONObject(0);
-		String first_mixid = first_mix.getString("id");
-		g_mix_id = first_mixid;
+		m_mixId = first_mix.getString("id");
 
 		// Rewrite mix id saved in db.
 		m_db.delete(PlaylistDbHelper.TABLE_NAME, null, null);
 
 		ContentValues values = new ContentValues();
-		values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, g_mix_id);
+		values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, m_mixId);
 		m_db.insert(PlaylistDbHelper.TABLE_NAME, null, values);
 
 		finish();
