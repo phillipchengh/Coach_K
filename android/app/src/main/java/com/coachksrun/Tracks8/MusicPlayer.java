@@ -4,6 +4,7 @@ import com.coachksrun.R;
 import com.coachksrun.Tracks8.MusicService;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,9 +12,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.RemoteControlClient;
+import android.media.session.MediaSession;
+import android.media.session.MediaSessionManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 
@@ -35,6 +41,9 @@ public class MusicPlayer {
     private MusicService m_MusicService = null;
     private ServiceConnection m_serviceConn = null;
 
+    private RemoteControlClient m_remoteControlClient = null;
+    private ComponentName m_LockScreen_Receiver = null;
+
     private Activity m_callerActivity;
     private LocalBroadcastManager m_callerBroadcastManager = null;
 
@@ -52,7 +61,33 @@ public class MusicPlayer {
 
         (new GetPlayToken()).execute();
 
-	setupSQLiteDB();
+        /*
+         * Set up SQLiteDB
+         */
+	    setupSQLiteDB();
+    }
+
+    public void SetupLockscreenControls()
+    {
+        /*
+         * Set up Lock Screen Controls
+         *
+         */
+        m_LockScreen_Receiver = new ComponentName(m_callerActivity.getPackageName(), LockScreenReceiver.class.getName());
+        AudioManager myAudioManager = (AudioManager)m_callerActivity.getSystemService(Context.AUDIO_SERVICE);
+        myAudioManager.registerMediaButtonEventReceiver(m_LockScreen_Receiver);
+
+        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        mediaButtonIntent.setComponent(m_LockScreen_Receiver);
+        PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(m_callerActivity.getApplicationContext(), 0, mediaButtonIntent, 0);
+
+        m_remoteControlClient = new RemoteControlClient(mediaPendingIntent);
+        m_remoteControlClient.setTransportControlFlags(
+                RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE | RemoteControlClient.FLAG_KEY_MEDIA_NEXT);
+
+        m_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+
+        myAudioManager.registerRemoteControlClient(m_remoteControlClient);
     }
 
     /**
@@ -90,6 +125,7 @@ public class MusicPlayer {
             System.err.println("Exception in processFinish(): " + e.getMessage());
         }
 
+        SetupLockscreenControls();
     }
 
     /**
@@ -253,16 +289,17 @@ public class MusicPlayer {
         public void onReceive(Context context, Intent intent)
         {
             play_token = intent.getStringExtra("play_token");
-	    if (null == play_token)
-	    {
-		return;
-	    }
 
-	    // Fetch MIX_ID from DB
-	    if (null == mix_id)
-	    {
-		mix_id = GetMixIdToPlay();
-	    }
+            if (null == play_token)
+            {
+                return;
+            }
+
+            // Fetch MIX_ID from DB
+            if (null == mix_id)
+            {
+                mix_id = GetMixIdToPlay();
+            }
 
             // Finally have both play token & mix id, so start music service.
             StartMusicService(play_token, mix_id);
@@ -277,12 +314,12 @@ public class MusicPlayer {
         if( c.moveToFirst() )
         {
             System.out.println("SQLiteDB - Mix id "+c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID)));
-	    mix_id = c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID));
+	        mix_id = c.getString(c.getColumnIndexOrThrow(PlaylistDbHelper.COLUMN_NAME_MIXID));
         }
         else
         {
             System.out.println("SQLiteDB is empty");
-	    mix_id = "5130631"; // DEFAULT HIP HOP playlist in case of fail.
+	        mix_id = "5130631"; // DEFAULT HIP HOP playlist in case of fail.
         }
 
 	c.close();
@@ -295,4 +332,40 @@ public class MusicPlayer {
         m_db = m_dbHelper.getWritableDatabase();
     }
 
+    public class LockScreenReceiver extends BroadcastReceiver
+    {
+        public void onReceive(Context context, Intent intent)
+        {
+            if( intent.getAction() != Intent.ACTION_MEDIA_BUTTON )
+            {
+                return;
+            }
+
+            KeyEvent key = intent.getParcelableExtra(intent.EXTRA_KEY_EVENT);
+
+            switch (key.getKeyCode() )
+            {
+                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                {
+                    if( null != m_MusicService )
+                    {
+                        m_MusicService.pauseTrack();
+                    }
+                    break;
+                }
+                case KeyEvent.KEYCODE_MEDIA_NEXT:
+                {
+                    if( null != m_MusicService )
+                    {
+                        m_MusicService.skipTrack();
+                    }
+                    break;
+                }
+                default:
+                {
+                    return;
+                }
+            }
+        }
+    }
 }
