@@ -160,10 +160,11 @@ public class MapsActivity extends Activity implements
                 latLngArray.add(latLng);
             }
         });
-
-        currentMarker = map.addMarker(new MarkerOptions()
-                .position(latLng)
-                .title("Current Location"));
+        if (currentMarker == null) {
+            currentMarker = map.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title("Current Location"));
+        }
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
 
         // Draw route from previously selected route
@@ -275,6 +276,17 @@ public class MapsActivity extends Activity implements
     public void musicStopClicked(View view)
     {
         mMusicPlayer.stopClicked(view);
+    }
+
+    //Adds route back to start position
+    public void routeHomeClick(View view) {
+        if(mActualLatLngArray.size() > 0) {
+            LatLng latLng = mActualLatLngArray.get(0);
+            Routing routing = new Routing(Routing.TravelMode.WALKING);
+            routing.registerListener(MapsActivity.this);
+            routing.execute(mActualLatLngArray.get(mActualLatLngArray.size() - 1), latLng);
+        }
+
     }
 
     public void routeFinishedClick(View view) {

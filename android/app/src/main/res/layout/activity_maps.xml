@@ -36,14 +36,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/button_finish"
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/route_finished_button"
-            android:textColor="#FFF"
-            android:background="#000"
-            android:onClick="routeFinishedClick" />
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/button_route_home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Route Home"
+                android:textColor="#FFF"
+                android:background="#000"
+                android:onClick="routeHomeClick"/>
+
+            <Button
+                android:id="@+id/button_finish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/route_finished_button"
+                android:textColor="#FFF"
+                android:background="#000"
+                android:onClick="routeFinishedClick" />
+        </LinearLayout>
+
 
         <TextView
             android:id="@+id/track_name"
