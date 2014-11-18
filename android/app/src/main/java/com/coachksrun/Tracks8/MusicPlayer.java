@@ -33,9 +33,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/**
- * Created by kristen on 11/11/14.
- */
+
 public class MusicPlayer {
 
     private MusicService m_MusicService = null;
@@ -53,11 +51,26 @@ public class MusicPlayer {
     private PlaylistDbHelper m_dbHelper = null;
     private SQLiteDatabase m_db = null;
 
+    private AudioManager myAudioManager;
+    private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener()
+	{
+	    public void onAudioFocusChange(int focusChange)
+	    {
+		if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
+		{
+		    myAudioManager.unregisterMediaButtonEventReceiver(m_LockScreen_Receiver);
+		    myAudioManager.abandonAudioFocus(audioFocusChangeListener);
+		}
+	    }
+	};
+
+
 
     public void SetupMusicService(Activity callerActivity)
     {
         m_callerActivity = callerActivity;
         m_callerBroadcastManager = LocalBroadcastManager.getInstance(m_callerActivity.getApplicationContext());
+        myAudioManager = (AudioManager)m_callerActivity.getSystemService(Context.AUDIO_SERVICE);	
 
         (new GetPlayToken()).execute();
 
@@ -73,21 +86,26 @@ public class MusicPlayer {
          * Set up Lock Screen Controls
          *
          */
-        m_LockScreen_Receiver = new ComponentName(m_callerActivity.getPackageName(), LockScreenReceiver.class.getName());
-        AudioManager myAudioManager = (AudioManager)m_callerActivity.getSystemService(Context.AUDIO_SERVICE);
-        myAudioManager.registerMediaButtonEventReceiver(m_LockScreen_Receiver);
-
+        m_LockScreen_Receiver = new ComponentName("com.coachksrun.Tracks8.MusicPlayer", LockScreenReceiver.class.getName());
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setComponent(m_LockScreen_Receiver);
         PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(m_callerActivity.getApplicationContext(), 0, mediaButtonIntent, 0);
 
+	myAudioManager.registerMediaButtonEventReceiver(mediaPendingIntent);
+
         m_remoteControlClient = new RemoteControlClient(mediaPendingIntent);
         m_remoteControlClient.setTransportControlFlags(
-                RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE | RemoteControlClient.FLAG_KEY_MEDIA_NEXT);
+                RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE | 
+		RemoteControlClient.FLAG_KEY_MEDIA_NEXT);
 
         m_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
 
         myAudioManager.registerRemoteControlClient(m_remoteControlClient);
+
+	/**
+	 * Request audio focus for this app.
+	 */
+	myAudioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE);
     }
 
     /**
@@ -347,16 +365,20 @@ public class MusicPlayer {
             {
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                 {
+		    System.out.println(">>>>>>>>>> PAUSE CLICKED");
                     if( null != m_MusicService )
                     {
+			System.out.println("123");
                         m_MusicService.pauseTrack();
                     }
                     break;
                 }
                 case KeyEvent.KEYCODE_MEDIA_NEXT:
                 {
+		    System.out.println(">>>>>>>>>> NEXT CLICKED");
                     if( null != m_MusicService )
                     {
+			System.out.println("2");
                         m_MusicService.skipTrack();
                     }
                     break;
