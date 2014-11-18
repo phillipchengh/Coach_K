@@ -131,10 +131,11 @@ public class RouteSelection extends Activity implements
                 latLngArray.add(latLng);
             }
         });
-
-        currentMarker = map.addMarker(new MarkerOptions()
-                .position(latLng)
-                .title("Current Location"));
+        if (currentMarker == null) {
+            currentMarker = map.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title("Current Location"));
+        }
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
     }
 
