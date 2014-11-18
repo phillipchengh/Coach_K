@@ -1,8 +1,5 @@
 package com.coachksrun.Tracks8;
 
-import com.coachksrun.R;
-import com.coachksrun.Tracks8.MusicService;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -11,11 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.RemoteControlClient;
-import android.media.session.MediaSession;
-import android.media.session.MediaSessionManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -23,8 +20,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import com.coachksrun.R;
 
 import org.json.JSONObject;
 

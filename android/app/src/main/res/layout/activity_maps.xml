@@ -20,8 +20,7 @@
             android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:name="com.google.android.gms.maps.MapFragment"
-            android:visibility="gone"/>
+            android:name="com.google.android.gms.maps.MapFragment" />
 
         <fragment
             android:id="@+id/map_stats"
@@ -32,22 +31,29 @@
      </LinearLayout>
 
     <LinearLayout
-       android:layout_below="@id/map_fragments"
         android:orientation="vertical"
         android:layout_weight="0.2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <Button
+            android:id="@+id/button_finish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/route_finished_button"
+            android:textColor="#FFF"
+            android:background="#000"
+            android:onClick="routeFinishedClick" />
+
         <TextView
             android:id="@+id/track_name"
             android:visibility="gone"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
         <LinearLayout
-            android:layout_below="@id/track_name"
             android:id="@+id/track_control_buttons"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -57,7 +63,7 @@
                 android:id="@+id/button_pause"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
-	        android:layout_weight="0.3"
+	            android:layout_weight="0.3"
                 android:text="@string/tracks8_pause"
                 android:textColor="#FFF"
                 android:background="#000"
@@ -67,7 +73,7 @@
                 android:id="@+id/button_next"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
-	        android:layout_weight="0.3"
+	            android:layout_weight="0.3"
                 android:text="@string/tracks8_next"
                 android:textColor="#FFF"
                 android:background="#000"
@@ -77,7 +83,7 @@
                 android:id="@+id/button_stop"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
-	        android:layout_weight="0.3"
+	            android:layout_weight="0.3"
                 android:text="@string/tracks8_stop"
                 android:textColor="#FFF"
                 android:background="#000"

@@ -43,7 +43,6 @@ public class RouteSelection extends Activity implements
 
     private LocationClient mLocationClient;
     private LocationRequest mLocationRequest;
-    private Location previousLocation;
 
     private GoogleMap map;
     private Marker currentMarker;
@@ -106,11 +105,9 @@ public class RouteSelection extends Activity implements
         mLocationClient.requestLocationUpdates(mLocationRequest, this);
 
         Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
-        Location currentLocation = mLocationClient.getLastLocation();
-        LatLng latLng = new LatLng(currentLocation.getLatitude(),
-                currentLocation.getLongitude());
-
-        previousLocation = currentLocation;
+        final Location location = mLocationClient.getLastLocation();
+        LatLng latLng = new LatLng(location.getLatitude(),
+                location.getLongitude());
 
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.routeSelect))
                 .getMap();
@@ -121,7 +118,7 @@ public class RouteSelection extends Activity implements
                 //Else route from last position in vector
 
                 if(latLngArray.size() == 0) {
-                    LatLng tempLL = new LatLng(previousLocation.getLatitude(), previousLocation.getLongitude());
+                    LatLng tempLL = new LatLng(location.getLatitude(), location.getLongitude());
                     latLngArray.add(tempLL);
                 }
 
@@ -158,32 +155,7 @@ public class RouteSelection extends Activity implements
         LatLng latLng = new LatLng(location.getLatitude(),
                 location.getLongitude());
 
-        final float speed = getSpeed(previousLocation, location);
-
         currentMarker.setPosition(latLng);
-        //map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                String status = "Current Coordinates: " + location.getLatitude() + ", " +
-                        location.getLongitude() + "\n" +
-                        "Current Speed: " + speed + " mph";
-                //mMapStats.setSpeed(status);
-
-                final double currentLatitude = location.getLatitude();
-                final double currentLongitude = location.getLongitude();
-                LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
-                //map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
-
-            }
-        });
-    }
-
-    private float getSpeed(Location previousLocation, Location currentLocation) {
-        float meters = previousLocation.distanceTo(currentLocation);
-        float miles = meters * (float) 0.00062137;
-        return miles * 60 * 12;
     }
 
     @Override

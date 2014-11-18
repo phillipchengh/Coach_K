@@ -3,15 +3,10 @@ package com.coachksrun.maps;
 //http://developer.android.com/training/location/retrieve-current.html
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,9 +14,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.coachksrun.R;
-import com.coachksrun.Tracks8.MusicService;
 import com.coachksrun.Tracks8.MusicPlayer;
-import com.coachksrun.Tracks8.utility;
 import com.directions.route.Route;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
@@ -38,6 +31,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.joda.time.DateTime;
+import org.joda.time.Hours;
+import org.joda.time.Minutes;
+import org.joda.time.Seconds;
+
 import java.util.ArrayList;
 
 public class MapsActivity extends Activity implements
@@ -46,6 +44,10 @@ public class MapsActivity extends Activity implements
         LocationListener, RoutingListener {
     public final static String EXTRA_LAT_LNG = "com.coachksrun.maps.lat_lng";
     public final static String EXTRA_POLYLINE = "com.coachksrun.maps.polyline";
+    public final static String EXTRA_DISTANCE = "com.coachksrun.maps.distance";
+    public final static String EXTRA_SECONDS = "com.coachksrun.maps.seconds";
+    public final static String EXTRA_MINUTES = "com.coachksrun.maps.minutes";
+    public final static String EXTRA_HOURS = "com.coachksrun.maps.hours";
 
     private final static int UPDATE_INTERVAL = 1000;
     private final static int FASTEST_INTERVAL = 100;
@@ -61,6 +63,11 @@ public class MapsActivity extends Activity implements
     private ArrayList<LatLng> mRouteLatLngArray;
     private ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
     private ArrayList<PolylineOptions> mRoutePolylineOptionsArray;
+
+    private ArrayList<LatLng> mActualLatLngArray = new ArrayList<LatLng>();
+    private ArrayList<PolylineOptions> mActualPolylineOptionsArray = new ArrayList<PolylineOptions>();
+    private float totalDistance = 0;
+    private static final DateTime before = new DateTime();
 
     private MusicPlayer mMusicPlayer = new MusicPlayer();
 
@@ -160,9 +167,8 @@ public class MapsActivity extends Activity implements
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
 
         // Draw route from previously selected route
-        for (int i = 0; i < mRoutePolylineOptionsArray.size(); i++) {
-            map.addPolyline(mRoutePolylineOptionsArray.get(i));
-        }
+        for(PolylineOptions polylineOptions : mRoutePolylineOptionsArray)
+            map.addPolyline(polylineOptions);
     }
 
     @Override
@@ -187,11 +193,22 @@ public class MapsActivity extends Activity implements
     public void onLocationChanged(final Location location) {
         LatLng latLng = new LatLng(location.getLatitude(),
                 location.getLongitude());
+        LatLng previousLatLng = new LatLng(previousLocation.getLatitude(),
+                previousLocation.getLongitude());
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .add(previousLatLng, latLng)
+                .width(5)
+                .color(Color.GREEN);
+
+        mActualLatLngArray.add(latLng);
+        mActualPolylineOptionsArray.add(polylineOptions);
+        totalDistance = previousLocation.distanceTo(location);
 
         final float speed = getSpeed(previousLocation, location);
 
         currentMarker.setPosition(latLng);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+        map.addPolyline(polylineOptions);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -210,6 +227,8 @@ public class MapsActivity extends Activity implements
                     currentMarker.setPosition(currentLocation);
             }
         });
+
+        previousLocation = location;
     }
 
     private float getSpeed(Location previousLocation, Location currentLocation) {
@@ -256,5 +275,24 @@ public class MapsActivity extends Activity implements
     public void musicStopClicked(View view)
     {
         mMusicPlayer.stopClicked(view);
+    }
+
+    public void routeFinishedClick(View view) {
+        DateTime now = new DateTime();
+        Intent data = new Intent(MapsActivity.this, RunSummaryActivity.class);
+
+        int seconds = Seconds.secondsBetween(before, now).getSeconds();
+        int minutes = Minutes.minutesBetween(before, now).getMinutes();
+        int hours = Hours.hoursBetween(before, now).getHours();
+
+        data.putExtra(EXTRA_LAT_LNG, mActualLatLngArray);
+        data.putExtra(EXTRA_POLYLINE, mActualPolylineOptionsArray);
+        data.putExtra(EXTRA_DISTANCE, totalDistance);
+        data.putExtra(EXTRA_SECONDS, seconds);
+        data.putExtra(EXTRA_MINUTES, minutes);
+        data.putExtra(EXTRA_HOURS, hours);
+
+        startActivity(data);
+
     }
 }

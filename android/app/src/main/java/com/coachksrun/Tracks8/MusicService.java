@@ -1,20 +1,13 @@
 package com.coachksrun.Tracks8;
-import com.coachksrun.R;
-import com.coachksrun.Tracks8.utility;
 
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.IntentFilter;
-import android.media.MediaPlayer;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
-import android.media.AudioManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import org.json.JSONObject;
 

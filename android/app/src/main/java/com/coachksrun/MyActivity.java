@@ -9,8 +9,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.coachksrun.maps.MapModeSelect;
-import com.coachksrun.maps.MapsActivity;
 import com.coachksrun.maps.RouteSelection;
 
 
