@@ -1,7 +1,5 @@
 package com.coachksrun.Tracks8;
 
-import android.media.MediaPlayer;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

@@ -20,7 +20,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MyActivity"
+            android:name="com.coachksrun.MyActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,19 +29,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".LoginActivity"
+            android:name="com.coachksrun.LoginActivity"
             android:label="@string/title_activity_login" >
         </activity>
         <activity
-            android:name=".Tracks8Activity"
+            android:name="com.coachksrun.Tracks8Activity"
             android:label="@string/title_activity_tracks8" >
         </activity>
         <activity
-            android:name=".maps.MapsActivity"
+            android:name="com.coachksrun.maps.MapsActivity"
             android:label="@string/title_activity_maps" >
         </activity>
         <activity
-            android:name=".YelpActivity"
+            android:name="com.coachksrun.YelpActivity"
             android:label="@string/title_activity_yelp" >
         </activity>
         <activity android:name="com.facebook.LoginActivity" />
@@ -56,30 +56,34 @@
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/app_id" />
 
-        <service android:name=".Tracks8.MusicService" />
+        <service android:name="com.coachksrun.Tracks8.MusicService" />
 
         <activity
-            android:name=".PreferencesActivity"
+            android:name="com.coachksrun.PreferencesActivity"
             android:label="@string/title_activity_preferences" />
         <activity
-            android:name=".maps.MapModeSelect"
+            android:name="com.coachksrun.maps.MapModeSelect"
             android:label="@string/title_activity_map_mode_select"
-            android:parentActivityName=".MyActivity" >
+            android:parentActivityName="com.coachksrun.MyActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.coachksrun.MyActivity" />
         </activity>
         <activity
-            android:name=".maps.RouteSelection"
+            android:name="com.coachksrun.maps.RouteSelection"
             android:label="@string/title_activity_route_selection"
-            android:parentActivityName=".maps.MapModeSelect" >
+            android:parentActivityName="com.coachksrun.maps.MapModeSelect" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.coachksrun.maps.MapModeSelect" />
         </activity>
         <activity
-            android:name=".MenuActivity"
+            android:name="com.coachksrun.MenuActivity"
             android:label="@string/title_activity_menu" >
+        </activity>
+        <activity
+            android:name="com.coachksrun.maps.RunSummaryActivity"
+            android:label="@string/title_activity_run_summary" >
         </activity>
     </application>
 
