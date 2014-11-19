@@ -12,7 +12,7 @@ tools:context="com.coachksrun.maps.RunSummaryActivity">
 <LinearLayout
     android:id="@+id/map_fragments"
     android:orientation="vertical"
-    android:layout_weight="0.8"
+    android:layout_weight="1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -26,23 +26,22 @@ tools:context="com.coachksrun.maps.RunSummaryActivity">
 
 <LinearLayout
     android:orientation="vertical"
-    android:layout_weight="0.2"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="60dp">
 
     <TextView
         android:id="@+id/summary_total_distance"
-        android:text="@string/hello_world"
+        android:text="Hello world!"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <TextView
         android:id="@+id/summary_total_time"
-        android:text="@string/hello_world"
+        android:text="Hello world!"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <TextView
         android:id="@+id/summary_avg_pace"
-        android:text="@string/hello_world"
+        android:text="Hello world!"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.coachksrun.R;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -38,6 +39,8 @@ public class RunSummaryActivity extends Activity {
 
         for(PolylineOptions polylineOption : polylineOptions)
             map.addPolyline(polylineOption);
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(0), 18));
 
         float distance = intent.getFloatExtra(EXTRA_DISTANCE, 0);
         ((TextView) findViewById(R.id.summary_total_distance)).setText(

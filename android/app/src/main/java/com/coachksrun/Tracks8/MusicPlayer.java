@@ -191,9 +191,9 @@ public class MusicPlayer {
                 System.out.println("Got track name:" + track_name);
                 TextView textview = (TextView) m_callerActivity.findViewById(R.id.track_name);
                 textview.setText(track_name);
-                textview.setBackgroundColor(Color.BLACK);
-                textview.setTextColor(Color.WHITE);
-                textview.setVisibility(View.VISIBLE);
+                //textview.setBackgroundColor(Color.BLACK);
+                //textview.setTextColor(Color.WHITE);
+                //textview.setVisibility(View.VISIBLE);
             }
             else if (utility.STOP_SERVICE_ACTION == action)
             {
