@@ -45,6 +45,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     }
 
+    public boolean paused()
+    {
+	return isPaused;
+    }
+
     public void skipTrack()
     {
         if (null != m_mediaPlayer)

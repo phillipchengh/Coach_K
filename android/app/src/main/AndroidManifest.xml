@@ -85,6 +85,13 @@
             android:name="com.coachksrun.maps.RunSummaryActivity"
             android:label="@string/title_activity_run_summary" >
         </activity>
+
+	<receiver android:name="com.coachksrun.Tracks8.LockscreenControlReceiver">
+	  <intent-filter>
+            <action android:name="android.intent.action.MEDIA_BUTTON" />
+	  </intent-filter>
+	</receiver>
+
     </application>
 
 </manifest>

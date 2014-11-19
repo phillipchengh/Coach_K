@@ -70,10 +70,7 @@ public class MusicPlayer {
 
         (new GetPlayToken()).execute();
 
-        /*
-         * Set up SQLiteDB
-         */
-	    setupSQLiteDB();
+	setupSQLiteDB();
     }
 
     public void SetupLockscreenControls()
@@ -82,12 +79,14 @@ public class MusicPlayer {
          * Set up Lock Screen Controls
          *
          */
-        m_LockScreen_Receiver = new ComponentName("com.coachksrun.Tracks8.MusicPlayer", LockScreenReceiver.class.getName());
-        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        m_LockScreen_Receiver = new ComponentName(m_callerActivity.getPackageName(), LockScreenReceiver.class.getName());
+
+	myAudioManager.registerMediaButtonEventReceiver(m_LockScreen_Receiver);
+
+        Intent mediaButtonIntent = new Intent();
+	mediaButtonIntent.setAction(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setComponent(m_LockScreen_Receiver);
         PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(m_callerActivity.getApplicationContext(), 0, mediaButtonIntent, 0);
-
-	myAudioManager.registerMediaButtonEventReceiver(mediaPendingIntent);
 
         m_remoteControlClient = new RemoteControlClient(mediaPendingIntent);
         m_remoteControlClient.setTransportControlFlags(
@@ -138,8 +137,22 @@ public class MusicPlayer {
         catch(Exception e) {
             System.err.println("Exception in processFinish(): " + e.getMessage());
         }
-
         SetupLockscreenControls();
+
+    }
+
+    private void togglePause()
+    {
+        m_MusicService.pauseTrack();
+	if (m_MusicService.paused())
+	{
+	    m_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+	}
+	else
+	{
+	    m_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+	    SetupLockscreenControls();
+	}
     }
 
     /**
@@ -147,7 +160,7 @@ public class MusicPlayer {
      */
     public void pauseClicked(View view)
     {
-        m_MusicService.pauseTrack();
+	togglePause();
     }
 
     /**
@@ -350,6 +363,7 @@ public class MusicPlayer {
     {
         public void onReceive(Context context, Intent intent)
         {
+	    System.out.println("** ***** ** ****** Received broadcast event");
             if( intent.getAction() != Intent.ACTION_MEDIA_BUTTON )
             {
                 return;
@@ -365,7 +379,7 @@ public class MusicPlayer {
                     if( null != m_MusicService )
                     {
 			System.out.println("123");
-                        m_MusicService.pauseTrack();
+			togglePause();
                     }
                     break;
                 }
