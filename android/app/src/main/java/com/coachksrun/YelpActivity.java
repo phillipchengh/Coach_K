@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.coachksrun.Pitstop.Yelper;
 
 public class YelpActivity extends Activity {
 
@@ -12,6 +13,10 @@ public class YelpActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yelp);
+
+	Yelper hola_abbrevio = new Yelper();
+	hola_abbrevio.DisplayPitstopsOnMap();
+	System.out.println("******************* GOODBYE *****************");
     }
 
 

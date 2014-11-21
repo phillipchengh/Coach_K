@@ -1,1 +1,1 @@
-include ':routing', ':app', ':facebook'
+include ':routing', ':app', ':facebook', ':libs'
