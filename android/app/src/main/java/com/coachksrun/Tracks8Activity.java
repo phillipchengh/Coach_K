@@ -35,16 +35,16 @@ public class Tracks8Activity extends Activity
     private SQLiteDatabase m_db = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
+        protected void onCreate(Bundle savedInstanceState)
+        {
+            super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_tracks8);
+            setContentView(R.layout.activity_tracks8);
 
-        // Lets user choose genre, get playlist (mix_id), and start streaming.
-	ChooseGenreAndGetMixId();
-        setupSQLiteDB();
-    }
+            // Lets user choose genre, get playlist (mix_id), and start streaming.
+            ChooseGenreAndGetMixId();
+            setupSQLiteDB();
+        }
 
     public void setupSQLiteDB()
     {
@@ -101,7 +101,7 @@ public class Tracks8Activity extends Activity
                 TextView tview = (TextView) findViewById(R.id.track_name);
                 tview.setVisibility(View.VISIBLE);
                 tview.setText(utility.LOADING_TEXT);
-            }
+                    }
         };
         list_view.setOnItemClickListener(genreClickedHandler);
     }
@@ -135,17 +135,17 @@ public class Tracks8Activity extends Activity
 
             try {
                 JSONArray mixes = mixes_json.getJSONArray("mixes");
-		JSONObject first_mix = mixes.getJSONObject(0);
-		m_mixId = first_mix.getString("id");
+                JSONObject first_mix = mixes.getJSONObject(0);
+                m_mixId = first_mix.getString("id");
 
-		// Rewrite mix id saved in db.
-		m_db.delete(PlaylistDbHelper.TABLE_NAME, null, null);
+                // Rewrite mix id saved in db.
+                m_db.delete(PlaylistDbHelper.TABLE_NAME, null, null);
 
-		ContentValues values = new ContentValues();
-		values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, m_mixId);
-		m_db.insert(PlaylistDbHelper.TABLE_NAME, null, values);
+                ContentValues values = new ContentValues();
+                values.put(PlaylistDbHelper.COLUMN_NAME_MIXID, m_mixId);
+                m_db.insert(PlaylistDbHelper.TABLE_NAME, null, values);
 
-		finish();
+                finish();
 
             } catch (Exception e) {
                 System.err.println("Malformed mixes json: " + mixes_json.toString());
@@ -154,22 +154,22 @@ public class Tracks8Activity extends Activity
         }
     }
 
-   @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.tracks8, menu);
-        return true;
-    }
-
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        public boolean onCreateOptionsMenu(Menu menu) {
+            // Inflate the menu; this adds items to the action bar if it is present.
+            getMenuInflater().inflate(R.menu.tracks8, menu);
             return true;
         }
-        return super.onOptionsItemSelected(item);
-    }
+
+    @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            // Handle action bar item clicks here. The action bar will
+            // automatically handle clicks on the Home/Up button, so long
+            // as you specify a parent activity in AndroidManifest.xml.
+            int id = item.getItemId();
+            if (id == R.id.action_settings) {
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
 }

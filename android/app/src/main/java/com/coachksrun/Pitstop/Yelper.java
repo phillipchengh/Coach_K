@@ -1,6 +1,7 @@
 package com.coachksrun.Pitstop;
 
 import com.coachksrun.Pitstop.OAuth1Provider;
+import com.coachksrun.Pitstop.PitstopStruct;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -31,6 +32,8 @@ public class Yelper
     private final String YELP_TOKEN = "208_YKa1H_GNCFsPIOREdKdrPFsH5L4c";
     private final String YELP_TOKEN_SECRET = "Tq9xG1kA05aGWRuvKq9Pboejx_Q";
 
+    private static Yelper m_instance = null;
+
     private final String YELP_SEARCH_LIMIT = "5";
     private final int BUSINESS_LIMIT = Integer.parseInt(YELP_SEARCH_LIMIT);
     private final String YELP_SEARCH_TERM = "juice";
@@ -40,78 +43,97 @@ public class Yelper
     private OAuthService m_oAuthService = null;
     private Token m_oAuthToken = null;
 
-    private void SetupYelper()
+    private Yelper()
     {
-	ServiceBuilder builder = new ServiceBuilder();
-	builder.provider(OAuth1Provider.class);
-	builder.apiKey(YELP_KEY);
-	builder.apiSecret(YELP_SECRET);
-	m_oAuthService = builder.build();
+        ServiceBuilder builder = new ServiceBuilder();
+        builder.provider(OAuth1Provider.class);
+        builder.apiKey(YELP_KEY);
+        builder.apiSecret(YELP_SECRET);
+        m_oAuthService = builder.build();
         m_oAuthToken = new Token(YELP_TOKEN, YELP_TOKEN_SECRET);
     }
 
-    private void GetPitstops(String location)
+    public static Yelper getInstance()
     {
-	String[] location_arg = {location};
-	(new AskYelpTask()).execute(location_arg);
+        if( null == m_instance )
+        {
+            m_instance = new Yelper();
+        }
+
+        return m_instance;
     }
 
-    private class AskYelpTask extends AsyncTask<String, Void, Void>
+    public void getPitstops(double latitude, double longitude)
     {
-	protected Void doInBackground(String... locations)
-	{
-	    String location = locations[0];
-
-	    // Build OAuth request.
-	    OAuthRequest request = new OAuthRequest(
-		 Verb.GET, "http://" + YELP_API_HOST + YELP_SEARCH_PATH);
-	    request.addQuerystringParameter("term", YELP_SEARCH_TERM);
-	    request.addQuerystringParameter("location", location);
-	    request.addQuerystringParameter("limit", YELP_SEARCH_LIMIT);
-	    
-	    // Query Yelp for pitstops.
-	    m_oAuthService.signRequest(m_oAuthToken, request);
-	    
-	    Response response = request.send();
-	    String responseBody = response.getBody();
-
-	    try
-	    {
-		JSONObject json = new JSONObject(responseBody);
-		
-		if (null == json)
-		    return null;
-
-		JSONArray businesses = json.getJSONArray("businesses");
-		int numBusinesses = json.getInt("total");
-		if (numBusinesses > BUSINESS_LIMIT)
-		{
-		    numBusinesses = BUSINESS_LIMIT;
-		}
-		String[] businessNames = new String[numBusinesses];
-		for (int i = 0; i < numBusinesses; i++)
-		{
-		    JSONObject business = businesses.getJSONObject(i);
-		    businessNames[i] = business.getString("name");
-		}
-		System.out.println("First FIVE BUSINESSES: ");
-		for (String name: businessNames)
-		{
-		    System.out.println(name);
-		}
-	    }
-	    catch (JSONException e)
-	    {
-		System.err.println("Malformed YElp JSON response: " + responseBody);
-	    }
-	    return null;
-	}
+        Double[] location_arg = {new Double(latitude), new Double(longitude)};
+        (new AskYelpTask()).execute(location_arg);
     }
 
-    public void DisplayPitstopsOnMap()
+    private class AskYelpTask extends AsyncTask<Double, Void, String>
     {
-	SetupYelper();
-	GetPitstops("San francisco");
-    }
+        private double m_latitude;
+        private double m_longitude;
 
+        protected String doInBackground(Double... locations)
+        {
+            m_latitude = locations[0].doubleValue();
+            m_longitude = locations[1].doubleValue();
+
+            // Build OAuth request.
+            OAuthRequest request = new OAuthRequest(Verb.GET, "http://" + YELP_API_HOST + YELP_SEARCH_PATH);
+            request.addQuerystringParameter("term", YELP_SEARCH_TERM);
+            request.addQuerystringParameter("ll", m_latitude + "," + m_longitude);
+            request.addQuerystringParameter("limit", YELP_SEARCH_LIMIT);
+
+            // Query Yelp for pitstops.
+            m_oAuthService.signRequest(m_oAuthToken, request);
+
+            Response response = request.send();
+            String responseBody = response.getBody();
+
+            return responseBody;
+        }
+
+        protected void onPostExecute(String responseBody) 
+        {
+            try
+            {
+                JSONObject json = new JSONObject(responseBody);
+
+                if (null == json)
+                {
+                    return;
+                }
+
+                JSONArray businesses = json.getJSONArray("businesses");
+                int numBusinesses = json.getInt("total");
+
+                if (numBusinesses > BUSINESS_LIMIT)
+                {
+                    numBusinesses = BUSINESS_LIMIT;
+                }
+
+                PitstopStruct[] pitstopArr = new PitstopStruct[numBusinesses];
+                
+                for (int i = 0; i < numBusinesses; i++)
+                {
+                    JSONObject business = businesses.getJSONObject(i);
+                    JSONObject location = business.getJSONObject("location");
+                    JSONObject coordinates = location.getJSONObject("coordinate");
+                    pitstopArr[i] = new PitstopStruct(business.getString("name"), coordinates.getDouble("latitude"), coordinates.getDouble("longitude"));
+                }
+                
+                System.out.println("First FIVE BUSINESSES: ");
+                
+                for (int i =0; i < numBusinesses; i++)
+                {
+                    System.out.println(pitstopArr[i].getName()+": latitude: "+pitstopArr[i].getLatitude()+", longitude: "+pitstopArr[i].getLongitude());
+                }
+            }
+            catch (JSONException e)
+            {
+                System.err.println("Malformed Yelp JSON response: " + responseBody);
+            }
+        }
+    }
 }

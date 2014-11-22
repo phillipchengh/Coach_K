@@ -47,7 +47,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public boolean paused()
     {
-	return isPaused;
+        return isPaused;
     }
 
     public void skipTrack()
@@ -77,25 +77,25 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void releaseMediaPlayer()
     {
         if (null != m_mediaPlayer) {
-	    m_mediaPlayer.release();
-	    m_mediaPlayer = null;
-	}
+            m_mediaPlayer.release();
+            m_mediaPlayer = null;
+        }
     }
 
     @Override
-    public void onDestroy()
-    {
-	m_mixID = null;
-	m_playToken = null;
-	m_intent = null;
-	releaseMediaPlayer();
-    }
+        public void onDestroy()
+        {
+            m_mixID = null;
+            m_playToken = null;
+            m_intent = null;
+            releaseMediaPlayer();
+        }
 
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         m_intent = intent;
-	m_broadcast_manager = LocalBroadcastManager.getInstance(
-				getApplicationContext());
+        m_broadcast_manager = LocalBroadcastManager.getInstance(
+                getApplicationContext());
 
         m_playToken = intent.getStringExtra("PLAY_TOKEN");
         m_mixID = intent.getStringExtra("MIX_ID");
@@ -214,7 +214,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             // Get Ids and Names of mixes.
             String streamUrl = null;
             try {
-		streamUrl = handleTrackResponseAndGetStreamUrl(json);
+                streamUrl = handleTrackResponseAndGetStreamUrl(json);
             } catch (Exception e) {
                 System.err.println("Malformed STREAM json: " + json.toString());
                 return;
@@ -276,7 +276,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
                 if( status.equals("200 OK") )
                 {
-		    String streamUrl = handleTrackResponseAndGetStreamUrl(json);
+                    String streamUrl = handleTrackResponseAndGetStreamUrl(json);
                     playStream(streamUrl);
                 }
                 else {
@@ -297,50 +297,50 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      */
     private String handleTrackResponseAndGetStreamUrl(JSONObject json)
     {
-	String streamUrl = null;
-	try
-	{
-	    JSONObject set = json.getJSONObject("set");
-	    boolean at_end = set.getBoolean("at_end");
-	    if (at_end) 
-	    {
-		Intent stop_service_intent = new Intent();
-		stop_service_intent.setAction(utility.STOP_SERVICE_ACTION);
-		m_broadcast_manager.sendBroadcast(stop_service_intent);
-	    }
-	    else
-	    {
-		JSONObject track = set.getJSONObject("track");
-		streamUrl = track.getString("url");
-		System.out.println("STREAM URL: " + streamUrl);
-
-		tellActivityTrackName(track.getString("name"));
-
-		reportTo8Tracks(track.getString("id"));
-	    }
-	}
-	catch(Exception e)
+        String streamUrl = null;
+        try
         {
-	    System.err.println("Exception parsing JSON getting stream url");
-	}
-	
-	return streamUrl;
+            JSONObject set = json.getJSONObject("set");
+            boolean at_end = set.getBoolean("at_end");
+            if (at_end) 
+            {
+                Intent stop_service_intent = new Intent();
+                stop_service_intent.setAction(utility.STOP_SERVICE_ACTION);
+                m_broadcast_manager.sendBroadcast(stop_service_intent);
+            }
+            else
+            {
+                JSONObject track = set.getJSONObject("track");
+                streamUrl = track.getString("url");
+                System.out.println("STREAM URL: " + streamUrl);
+
+                tellActivityTrackName(track.getString("name"));
+
+                reportTo8Tracks(track.getString("id"));
+            }
+        }
+        catch(Exception e)
+        {
+            System.err.println("Exception parsing JSON getting stream url");
+        }
+
+        return streamUrl;
     }
 
     private void tellActivityTrackName(String track_name)
     {
-	Intent send_trackname_intent = new Intent();
-	send_trackname_intent.setAction(utility.TRACK_NAME_ACTION);
-	send_trackname_intent.putExtra("track_name", track_name);
-	m_broadcast_manager.sendBroadcast(send_trackname_intent);
+        Intent send_trackname_intent = new Intent();
+        send_trackname_intent.setAction(utility.TRACK_NAME_ACTION);
+        send_trackname_intent.putExtra("track_name", track_name);
+        m_broadcast_manager.sendBroadcast(send_trackname_intent);
     }
 
     private void reportTo8Tracks(String track_id)
     {
-	String url = String.format("http://8tracks.com/sets/%s/report.json?track_id=%s&mix_id=%s", m_playToken, track_id, m_mixID);
-	Intent reporting_intent = new Intent();
-	reporting_intent.setAction(utility.REPORT_ACTION);
-	reporting_intent.putExtra("report_url", url);
-	m_broadcast_manager.sendBroadcast(reporting_intent);
+        String url = String.format("http://8tracks.com/sets/%s/report.json?track_id=%s&mix_id=%s", m_playToken, track_id, m_mixID);
+        Intent reporting_intent = new Intent();
+        reporting_intent.setAction(utility.REPORT_ACTION);
+        reporting_intent.putExtra("report_url", url);
+        m_broadcast_manager.sendBroadcast(reporting_intent);
     }
 }

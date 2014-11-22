@@ -14,11 +14,10 @@ public class YelpActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yelp);
 
-	Yelper hola_abbrevio = new Yelper();
-	hola_abbrevio.DisplayPitstopsOnMap();
-	System.out.println("******************* GOODBYE *****************");
+        Yelper hola_abbrevio = Yelper.getInstance();
+        System.out.println("******************* GRABBING COORDINATES *****************");
+        hola_abbrevio.getPitstops(37.788022, -122.399797);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
