@@ -73,6 +73,10 @@ public class MapsActivity extends Activity implements
 
     private MusicPlayer mMusicPlayer = new MusicPlayer();
 
+    private static ArrayList<MarkerOptions> yelpMarkers;
+    private ArrayList<Marker> yelpMapMarkers  = new ArrayList<Marker>();
+    private Yelper hola_abbrevio = Yelper.getInstance();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -210,8 +214,22 @@ public class MapsActivity extends Activity implements
         final float speed = getSpeed(previousLocation, location);
 
         currentMarker.setPosition(latLng);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+        //map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
         map.addPolyline(polylineOptions);
+
+
+        //Update Yelp markers
+        hola_abbrevio.getPitstops(location.getLatitude(), location.getLongitude());
+        for(int i = 0; i < yelpMapMarkers.size(); i++) {
+            yelpMapMarkers.get(i).remove();
+        }
+        yelpMapMarkers.clear();
+        if(yelpMarkers != null) {
+            for (int i = 0; i < yelpMarkers.size(); i++) {
+                Marker currentYelpMarker = map.addMarker(yelpMarkers.get(i));
+                yelpMapMarkers.add(currentYelpMarker);
+            }
+        }
 
         runOnUiThread(new Runnable() {
             @Override
@@ -224,7 +242,7 @@ public class MapsActivity extends Activity implements
                 final double currentLatitude = location.getLatitude();
                 final double currentLongitude = location.getLongitude();
                 LatLng currentLocation = new LatLng(currentLatitude, currentLongitude);
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+                //map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
 
                 if (map != null && currentMarker != null)
                     currentMarker.setPosition(currentLocation);
@@ -325,9 +343,23 @@ public class MapsActivity extends Activity implements
      */
     public static void displayPitstops(PitstopStruct[] pitstopArr, int numPitstops)
     {
+        if (yelpMarkers == null) {
+            yelpMarkers = new ArrayList<MarkerOptions>();
+        }
+        else {
+            yelpMarkers.clear();
+        }
         for(int i = 0; i < numPitstops; i++)
         {
             System.out.println(pitstopArr[i].getName()+": latitude: "+pitstopArr[i].getLatitude()+", longitude: "+pitstopArr[i].getLongitude());
+            MarkerOptions pitStop = new MarkerOptions();
+            LatLng coordinates = new LatLng(pitstopArr[i].getLatitude(), pitstopArr[i].getLongitude());
+            pitStop.position(coordinates);
+            pitStop.title(pitstopArr[i].getName());
+            System.out.println("Added Title:" + pitStop.getTitle());
+            yelpMarkers.add(pitStop);
         }
+
+
     }
 }
