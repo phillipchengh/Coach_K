@@ -9,15 +9,16 @@
     <string name="title_activity_maps">MapsActivity</string>
     <string name="title_activity_yelp">YelpActivity</string>
     <string name="tracks8_playlists_selection_list">Tracks8PlaylistsListView</string>
-
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_map_mode_select">MapModeSelect</string>
     <string name="title_activity_route_selection">RouteSelection</string>
-
     <string name="tracks8_pause">Pause</string>
     <string name="tracks8_next">Skip</string>
     <string name="tracks8_stop">Stop</string>
     <string name="tracks8_loading">Hold on...</string>
+    <string name="title_activity_timer">TimerActivity</string>
+    <string name="button_start">Start</string>
+    <string name="button_stop">Stop</string>
+    <string name="button_set_time">Set Time</string>
 
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
