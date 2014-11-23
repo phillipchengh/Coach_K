@@ -55,10 +55,13 @@ public class TimerActivity extends Activity {
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mTime == 0L)
+                    return;
+
                 if (mStarted) {
                     mCountDownTimer.cancel();
-                    mStartButton.setText(R.string.button_start);
                     mStarted = false;
+                    updateStartButton();
                 } else {
                     mCountDownTimer = new CountDownTimer(mTime, COUNTDOWN_INTERVAL) {
 
@@ -71,12 +74,15 @@ public class TimerActivity extends Activity {
                         @Override
                         public void onFinish() {
                             // TODO: Make this play a sound or something
+                            mTime = 0L;
                             setClock();
+                            mStarted = false;
+                            updateStartButton();
                             Toast.makeText(TimerActivity.this, "Done!", Toast.LENGTH_LONG).show();
                         }
                     }.start();
-                    mStartButton.setText(R.string.button_stop);
                     mStarted = true;
+                    updateStartButton();
                 }
             }
         });
@@ -126,5 +132,13 @@ public class TimerActivity extends Activity {
     public void setTime(long millis) {
         mTime = millis;
         setClock();
+    }
+
+    private void updateStartButton() {
+        if (mStarted) {
+            mStartButton.setText("Stop");
+        } else {
+            mStartButton.setText("Start");
+        }
     }
 }
