@@ -70,13 +70,16 @@ public class Yelper
         (new AskYelpTask()).execute(location_arg);
     }
 
-    private class AskYelpTask extends AsyncTask<Double, Void, String>
+    private class AskYelpTask extends AsyncTask<Double, Void, PitstopStruct[]>
     {
         private double m_latitude;
         private double m_longitude;
+        private int m_numBusinesses = 0;
 
-        protected String doInBackground(Double... locations)
-        {
+        protected PitstopStruct[] doInBackground(Double... locations)
+        {     
+            PitstopStruct[] pitstopArr = null;
+
             m_latitude = locations[0].doubleValue();
             m_longitude = locations[1].doubleValue();
 
@@ -92,31 +95,26 @@ public class Yelper
             Response response = request.send();
             String responseBody = response.getBody();
 
-            return responseBody;
-        }
-
-        protected void onPostExecute(String responseBody) 
-        {
             try
             {
                 JSONObject json = new JSONObject(responseBody);
 
                 if (null == json)
                 {
-                    return;
+                    return null;
                 }
 
                 JSONArray businesses = json.getJSONArray("businesses");
-                int numBusinesses = json.getInt("total");
+                m_numBusinesses = json.getInt("total");
 
-                if (numBusinesses > BUSINESS_LIMIT)
+                if (m_numBusinesses > BUSINESS_LIMIT)
                 {
-                    numBusinesses = BUSINESS_LIMIT;
+                    m_numBusinesses = BUSINESS_LIMIT;
                 }
 
-                PitstopStruct[] pitstopArr = new PitstopStruct[numBusinesses];
+                pitstopArr = new PitstopStruct[m_numBusinesses];
                 
-                for (int i = 0; i < numBusinesses; i++)
+                for (int i = 0; i < m_numBusinesses; i++)
                 {
                     JSONObject business = businesses.getJSONObject(i);
                     JSONObject location = business.getJSONObject("location");
@@ -124,11 +122,21 @@ public class Yelper
                     pitstopArr[i] = new PitstopStruct(business.getString("name"), coordinates.getDouble("latitude"), coordinates.getDouble("longitude"));
                 }
                 
-                MapsActivity.displayPitstops(pitstopArr, numBusinesses);
             }
             catch (JSONException e)
             {
                 System.err.println("Malformed Yelp JSON response: " + responseBody);
+                return null;
+            }
+
+            return pitstopArr;
+        }
+
+        protected void onPostExecute(PitstopStruct[] pitstopArr) 
+        {
+            if( null != pitstopArr )
+            {
+                MapsActivity.displayPitstops(pitstopArr, m_numBusinesses);
             }
         }
     }
