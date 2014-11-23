@@ -15,6 +15,8 @@ import android.widget.Toast;
 
 import com.coachksrun.R;
 import com.coachksrun.Tracks8.MusicPlayer;
+import com.coachksrun.Pitstop.PitstopStruct;
+import com.coachksrun.Pitstop.Yelper;
 import com.directions.route.Route;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
@@ -306,5 +308,26 @@ public class MapsActivity extends Activity implements
 
         startActivity(data);
 
+    }
+
+    /*
+     *  EXAMPLE CODE FOR YELP API
+     *
+     *  Yelper yelpClient = Yelper.getInstance();
+     *  yelpClient.getPitstops(double latitude, double longitude);
+     *
+     *
+     *  TODO: Implement displayPitstops()
+     *
+     *  After call to getPitstops(), coordinates of nearby juice businesses are
+     *  retrieved via an async task, then displayPitstops() is called to show 
+     *  businesses as markers on map
+     */
+    public static void displayPitstops(PitstopStruct[] pitstopArr, int numPitstops)
+    {
+        for(int i = 0; i < numPitstops; i++)
+        {
+            System.out.println(pitstopArr[i].getName()+": latitude: "+pitstopArr[i].getLatitude()+", longitude: "+pitstopArr[i].getLongitude());
+        }
     }
 }

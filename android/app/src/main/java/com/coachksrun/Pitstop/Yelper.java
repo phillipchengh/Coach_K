@@ -2,6 +2,7 @@ package com.coachksrun.Pitstop;
 
 import com.coachksrun.Pitstop.OAuth1Provider;
 import com.coachksrun.Pitstop.PitstopStruct;
+import com.coachksrun.maps.MapsActivity;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -123,12 +124,7 @@ public class Yelper
                     pitstopArr[i] = new PitstopStruct(business.getString("name"), coordinates.getDouble("latitude"), coordinates.getDouble("longitude"));
                 }
                 
-                System.out.println("First FIVE BUSINESSES: ");
-                
-                for (int i =0; i < numBusinesses; i++)
-                {
-                    System.out.println(pitstopArr[i].getName()+": latitude: "+pitstopArr[i].getLatitude()+", longitude: "+pitstopArr[i].getLongitude());
-                }
+                MapsActivity.displayPitstops(pitstopArr, numBusinesses);
             }
             catch (JSONException e)
             {
