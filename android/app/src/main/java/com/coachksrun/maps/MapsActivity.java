@@ -362,4 +362,10 @@ public class MapsActivity extends Activity implements
 
 
     }
+
+    public void getPitstopsClicked(View view)
+    {
+	// TODO: call displaPitstops() after TODO displayPitstops() is done.
+	System.out.println("Search yelp and show markers now!");
+    }
 }

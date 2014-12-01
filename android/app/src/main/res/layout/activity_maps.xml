@@ -55,6 +55,18 @@
                 android:textColor="#FFF"
 
                 android:onClick="routeFinishedClick" />
+
+            <Button
+                android:id="@+id/show_pitstops"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/get_yelp"
+                android:textColor="#FFF"
+
+                android:onClick="getPitstopsClicked" />
+
+	    
         </LinearLayout>
 
 
