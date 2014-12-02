@@ -77,6 +77,9 @@ public class MapsActivity extends Activity implements
     private ArrayList<Marker> yelpMapMarkers  = new ArrayList<Marker>();
     private Yelper hola_abbrevio = Yelper.getInstance();
 
+    //TODO: need the Facebook ID
+    private int id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -324,8 +327,11 @@ public class MapsActivity extends Activity implements
         data.putExtra(EXTRA_MINUTES, minutes);
         data.putExtra(EXTRA_HOURS, hours);
 
-        startActivity(data);
+        RouteUploadTask routeUploadTask = new RouteUploadTask(id, seconds, minutes, hours,
+                totalDistance, mActualLatLngArray);
+        routeUploadTask.execute();
 
+        startActivity(data);
     }
 
     /*

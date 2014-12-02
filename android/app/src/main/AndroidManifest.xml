@@ -97,6 +97,10 @@
 	  </intent-filter>
 	</receiver>
 
+        <activity
+            android:name="com.coachksrun.maps.RouteListActivity"
+            android:label="@string/title_activity_route_list" >
+        </activity>
     </application>
 
 </manifest>
