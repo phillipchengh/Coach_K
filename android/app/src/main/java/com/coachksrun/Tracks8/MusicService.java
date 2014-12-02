@@ -32,13 +32,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void pauseTrack()
     {
         if (null != m_mediaPlayer) {
+	    System.out.println("everywHere");
+
             if (m_mediaPlayer.isPlaying())
             {
+		System.out.println("Here");
                 m_mediaPlayer.pause();
                 isPaused = true;
             }
             else
             {
+		System.out.println("THere");
                 m_mediaPlayer.start();
                 isPaused = false;
             }
@@ -51,6 +55,22 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void skipTrack()
+    {
+        if (null != m_mediaPlayer)
+        {
+            if ( m_mediaPlayer.isPlaying())
+            {
+                (new SkipTrack_Task()).execute();
+            }
+            else
+            {
+                System.err.println("Skip Track Error: Either MediaPlayer is not playing or MusicService has NOT started");
+            }
+        }
+    }
+
+
+    public void skipTrack_old()
     {
         if (null != m_mediaPlayer)
         {
@@ -73,6 +93,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
         }
     }
+
 
     public void releaseMediaPlayer()
     {

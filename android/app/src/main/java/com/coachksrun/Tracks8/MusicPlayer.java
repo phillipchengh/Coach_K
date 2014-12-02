@@ -12,9 +12,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.KeyEvent;
 import android.view.View;
@@ -43,11 +45,15 @@ public class MusicPlayer {
 
     private ServiceToActivity_BroadcastReceiver m_srv_to_act_broadcast_receiver = null;
     private GotMixIdAndPlayToken_BroadcastReceiver m_playtoken_mixid_broadcast_receiver = null;
+    private LockScreenReceiver m_lockscreen_broadcast_receiver = null;
 
     private PlaylistDbHelper m_dbHelper = null;
     private SQLiteDatabase m_db = null;
 
-    private AudioManager myAudioManager;
+    private String m_currentTrackName = "Loading...";
+
+    PowerManager.WakeLock partial_wakelock = null;
+    private AudioManager myAudioManager = null;
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener()
 	{
 	    public void onAudioFocusChange(int focusChange)
@@ -56,6 +62,7 @@ public class MusicPlayer {
 		{
 		    myAudioManager.unregisterMediaButtonEventReceiver(m_LockScreen_Receiver);
 		    myAudioManager.abandonAudioFocus(audioFocusChangeListener);
+		    partial_wakelock.release();
 		}
 	    }
 	};
@@ -75,18 +82,17 @@ public class MusicPlayer {
 
     public void SetupLockscreenControls()
     {
-        /*
+        /**
          * Set up Lock Screen Controls
-         *
          */
-        m_LockScreen_Receiver = new ComponentName(m_callerActivity.getPackageName(), LockScreenReceiver.class.getName());
-
-	myAudioManager.registerMediaButtonEventReceiver(m_LockScreen_Receiver);
+	ComponentName media_receiver = new ComponentName(m_callerActivity.getPackageName(), MediaEventReceiver.class.getName());
 
         Intent mediaButtonIntent = new Intent();
 	mediaButtonIntent.setAction(Intent.ACTION_MEDIA_BUTTON);
-        mediaButtonIntent.setComponent(m_LockScreen_Receiver);
+        mediaButtonIntent.setComponent(media_receiver);
         PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(m_callerActivity.getApplicationContext(), 0, mediaButtonIntent, 0);
+
+	myAudioManager.registerMediaButtonEventReceiver(mediaPendingIntent);
 
         m_remoteControlClient = new RemoteControlClient(mediaPendingIntent);
         m_remoteControlClient.setTransportControlFlags(
@@ -101,6 +107,21 @@ public class MusicPlayer {
 	 * Request audio focus for this app.
 	 */
 	myAudioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE);
+
+	/**
+	 * Partial wake lock so that CPU continues to run when screen's off.
+	 */
+	PowerManager power_manager = (PowerManager) m_callerActivity.getSystemService(
+	    Context.POWER_SERVICE);
+	partial_wakelock = power_manager.newWakeLock(
+             PowerManager.PARTIAL_WAKE_LOCK, "Tracks8_WakeLock");
+	partial_wakelock.acquire();
+
+
+	/**
+	 * Edit lockscreen metadata.
+	 */
+	SetTrackName();
     }
 
     /**
@@ -144,6 +165,7 @@ public class MusicPlayer {
     private void togglePause()
     {
         m_MusicService.pauseTrack();
+
 	if (m_MusicService.paused())
 	{
 	    m_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
@@ -151,7 +173,6 @@ public class MusicPlayer {
 	else
 	{
 	    m_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
-	    SetupLockscreenControls();
 	}
     }
 
@@ -179,6 +200,15 @@ public class MusicPlayer {
         m_callerActivity.finish();
     }
 
+    private void SetTrackName()
+    {
+	// Display track name on screen lock.
+	m_remoteControlClient.editMetadata(false)
+	    .putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
+		       m_currentTrackName)
+	    .apply();
+    }
+
     private class ServiceToActivity_BroadcastReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent)
@@ -187,13 +217,12 @@ public class MusicPlayer {
             System.out.println(">>>> " + action);
             if (utility.TRACK_NAME_ACTION == action)
             {
-                String track_name = intent.getStringExtra("track_name");
-                System.out.println("Got track name:" + track_name);
+                m_currentTrackName = intent.getStringExtra("track_name");
+                System.out.println("Got track name:" + m_currentTrackName);
                 TextView textview = (TextView) m_callerActivity.findViewById(R.id.track_name);
-                textview.setText(track_name);
-                //textview.setBackgroundColor(Color.BLACK);
-                //textview.setTextColor(Color.WHITE);
-                //textview.setVisibility(View.VISIBLE);
+                textview.setText(m_currentTrackName);
+
+		SetTrackName();
             }
             else if (utility.STOP_SERVICE_ACTION == action)
             {
@@ -256,6 +285,7 @@ public class MusicPlayer {
 
         m_callerBroadcastManager.unregisterReceiver(m_srv_to_act_broadcast_receiver);
         m_callerBroadcastManager.unregisterReceiver(m_playtoken_mixid_broadcast_receiver);
+	m_callerBroadcastManager.unregisterReceiver(m_lockscreen_broadcast_receiver);
     }
 
     public void setupMusicPlayerBroadcasts(LocalBroadcastManager broadcastManager)
@@ -272,6 +302,12 @@ public class MusicPlayer {
         srv_to_act_filter.addAction(utility.STOP_SERVICE_ACTION);
         m_srv_to_act_broadcast_receiver = new ServiceToActivity_BroadcastReceiver();
         broadcastManager.registerReceiver(m_srv_to_act_broadcast_receiver, srv_to_act_filter);
+
+	IntentFilter lockscreen_filter = new IntentFilter();
+	lockscreen_filter.addAction(Intent.ACTION_MEDIA_BUTTON);
+	m_lockscreen_broadcast_receiver = new LockScreenReceiver();
+	broadcastManager.registerReceiver(m_lockscreen_broadcast_receiver, lockscreen_filter);
+    
     }
 
 
@@ -346,7 +382,7 @@ public class MusicPlayer {
         else
         {
             System.out.println("SQLiteDB is empty");
-	        mix_id = "5130631"; // DEFAULT HIP HOP playlist in case of fail.
+	    mix_id = "5130631"; // DEFAULT HIP HOP playlist in case of fail.
         }
 
 	c.close();
@@ -359,38 +395,42 @@ public class MusicPlayer {
         m_db = m_dbHelper.getWritableDatabase();
     }
 
+    public static class MediaEventReceiver extends BroadcastReceiver
+    {
+        public void onReceive(Context context, Intent intent)
+        {
+	    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+	}
+    }
+
     public class LockScreenReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent)
         {
-	    System.out.println("** ***** ** ****** Received broadcast event");
-            if( intent.getAction() != Intent.ACTION_MEDIA_BUTTON )
+            if( intent.getAction() != Intent.ACTION_MEDIA_BUTTON ||
+		null == m_MusicService )
             {
                 return;
             }
 
             KeyEvent key = intent.getParcelableExtra(intent.EXTRA_KEY_EVENT);
 
-            switch (key.getKeyCode() )
+	    // Don't react twice (for down and up actions).
+	    if (KeyEvent.ACTION_DOWN != key.getAction())
+	    {
+		return;
+	    }
+
+            switch (key.getKeyCode())
             {
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                 {
-		    System.out.println(">>>>>>>>>> PAUSE CLICKED");
-                    if( null != m_MusicService )
-                    {
-			System.out.println("123");
-			togglePause();
-                    }
+		    togglePause();
                     break;
                 }
                 case KeyEvent.KEYCODE_MEDIA_NEXT:
                 {
-		    System.out.println(">>>>>>>>>> NEXT CLICKED");
-                    if( null != m_MusicService )
-                    {
-			System.out.println("2");
-                        m_MusicService.skipTrack();
-                    }
+		    m_MusicService.skipTrack();
                     break;
                 }
                 default:
