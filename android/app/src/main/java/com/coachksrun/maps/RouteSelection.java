@@ -215,6 +215,8 @@ public class RouteSelection extends Activity implements
         data.putExtra(EXTRA_LAT_LNG, latLngArray);
         data.putExtra(EXTRA_POLYLINE, polylineOptionsArray);
         startActivity(data);
+
+        finish();
     }
 
     public void setRouteResult() {

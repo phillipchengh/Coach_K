@@ -52,6 +52,8 @@ public class MapModeSelect extends ListActivity {
                 startActivityForResult(i, REQUEST_ROUTE);
                 break;
         }
+
+        finish();
     }
 
     @Override

@@ -31,8 +31,10 @@
     <string name="tracks8_stop">Stop</string>
     <string name="tracks8_loading">Hold on...</string>
     <string name="route_finished_button">Done running!</string>
+    <string name="empty_run_list">No runs found!</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_menu">MenuActivity</string>
     <string name="title_activity_run_summary">RunSummaryActivity</string>
+    <string name="title_activity_route_list">RouteListActivity</string>
 
 </resources>
