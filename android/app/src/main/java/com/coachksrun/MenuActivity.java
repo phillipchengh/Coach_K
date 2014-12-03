@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.coachksrun.Tracks8.utility;
 import com.coachksrun.maps.MapModeSelect;
+import com.coachksrun.maps.RouteSelection;
 
 import org.json.JSONObject;
 
@@ -43,7 +44,7 @@ public class MenuActivity extends Activity {
         Button map_button = (Button) findViewById(R.id.map_button);
         map_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent(MenuActivity.this, MapModeSelect.class);
+                Intent intent = new Intent(MenuActivity.this, RouteSelection.class);
                 startActivity(intent);
             }
         });

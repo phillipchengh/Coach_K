@@ -17,6 +17,9 @@ public class MyActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent i = new Intent(MyActivity.this, LoginActivity.class);
+        startActivity(i);
+
         setContentView(R.layout.activity_my);
 
         String[] items = { "login", "Preferences", "Destination run", "yelp" };
