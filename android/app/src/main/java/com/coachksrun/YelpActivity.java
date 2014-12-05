@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.coachksrun.Pitstop.Yelper;
+import com.coachksrun.Tracks8.preferences;
 
 public class YelpActivity extends Activity {
 
@@ -14,9 +15,13 @@ public class YelpActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yelp);
 
+        /*
         Yelper hola_abbrevio = Yelper.getInstance();
         System.out.println("******************* GRABBING COORDINATES *****************");
         hola_abbrevio.getPitstops(37.788022, -122.399797);
+        */
+       
+         (new preferences()).queryPerferences("Test ID");
     }
 
     @Override
