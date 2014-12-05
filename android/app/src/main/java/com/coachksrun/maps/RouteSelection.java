@@ -24,6 +24,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -134,7 +135,8 @@ public class RouteSelection extends Activity implements
         if(currentMarker == null) {
             currentMarker = map.addMarker(new MarkerOptions()
                     .position(latLng)
-                    .title("Current Location"));
+                    .title("Current Location")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pos_marker)));
         }
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
     }

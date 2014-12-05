@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
+import com.coachksrun.MenuActivity;
 import com.coachksrun.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -87,5 +89,10 @@ public class RunSummaryActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void returnMainMenu(View view) {
+        Intent i = new Intent(RunSummaryActivity.this, MenuActivity.class);
+        startActivity(i);
     }
 }
