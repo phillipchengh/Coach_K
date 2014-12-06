@@ -65,7 +65,7 @@ public class RunSummaryActivity extends Activity {
         ((TextView) findViewById(R.id.summary_total_time)).setText(timeString);
 
         ((TextView) findViewById(R.id.summary_avg_pace)).setText("Average Pace: " +
-                String.valueOf(distance/intent.getLongExtra(EXTRA_SECONDS, -1) * 3600));
+                String.valueOf(Math.abs(distance/intent.getLongExtra(EXTRA_SECONDS, -1) * 3600)));
     }
 
 
