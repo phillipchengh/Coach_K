@@ -29,7 +29,7 @@ public class MapModeSelect extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_mode_select);
 
-        String[] items = { "Active", "Route" };
+        String[] items = { "Active", "Route", "Timer" };
         setListAdapter(new ArrayAdapter<String>(
                 getApplicationContext(),
                 android.R.layout.simple_list_item_1,
@@ -50,6 +50,10 @@ public class MapModeSelect extends ListActivity {
             case 1:
                 i = new Intent(MapModeSelect.this, RouteSelection.class);
                 startActivityForResult(i, REQUEST_ROUTE);
+                break;
+            case 2:
+                i = new Intent(MapModeSelect.this, TimerActivity.class);
+                startActivity(i);
                 break;
         }
 

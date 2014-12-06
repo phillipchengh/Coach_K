@@ -23,7 +23,7 @@
         <item>Jog</item>
         <item>Sprint</item>
     </string-array>
-
+    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_map_mode_select">MapModeSelect</string>
     <string name="title_activity_route_selection">RouteSelection</string>
     <string name="tracks8_pause">Pause</string>
@@ -33,9 +33,12 @@
     <string name="get_yelp">Find Pitstops</string>
     <string name="route_finished_button">Done running!</string>
     <string name="empty_run_list">No runs found!</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_menu">MenuActivity</string>
     <string name="title_activity_run_summary">RunSummaryActivity</string>
     <string name="title_activity_route_list">RouteListActivity</string>
+    <string name="title_activity_timer">TimerActivity</string>
+    <string name="button_start">Start</string>
+    <string name="button_stop">Stop</string>
+    <string name="button_set_time">Set Time</string>
 
 </resources>
