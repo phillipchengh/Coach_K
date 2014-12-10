@@ -193,7 +193,8 @@ public class RouteSelection extends Activity implements
         polylineOptionsArray.clear();
         currentMarker = map.addMarker(new MarkerOptions()
                 .position(latLng)
-                .title("Current Location"));
+                .title("Current Location")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pos_marker)));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
     }
 

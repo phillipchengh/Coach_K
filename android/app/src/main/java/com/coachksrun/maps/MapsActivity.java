@@ -172,6 +172,7 @@ public class MapsActivity extends Activity implements
 
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
                 .getMap();
+        /*
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -186,6 +187,7 @@ public class MapsActivity extends Activity implements
                 latLngArray.add(latLng);
             }
         });
+        */
         if (currentMarker == null) {
             currentMarker = map.addMarker(new MarkerOptions()
                     .position(latLng)
@@ -340,6 +342,7 @@ public class MapsActivity extends Activity implements
     }
 
     public void routeFinishedClick(View view) {
+        mMusicPlayer.pauseClicked(view);
         DateTime now = new DateTime();
         Intent data = new Intent(MapsActivity.this, RunSummaryActivity.class);
 

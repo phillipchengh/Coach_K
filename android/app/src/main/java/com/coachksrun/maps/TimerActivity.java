@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,7 +17,9 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.coachksrun.MenuActivity;
 import com.coachksrun.R;
+import com.coachksrun.Tracks8.MusicPlayer;
 
 public class TimerActivity extends Activity {
 
@@ -43,6 +47,8 @@ public class TimerActivity extends Activity {
     private Boolean mStarted = false;
 
     private long mTime = 0L;
+
+    private MusicPlayer mMusicPlayer = new MusicPlayer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +101,20 @@ public class TimerActivity extends Activity {
                 setClock();
             }
         });
+
+        Button mainMenuButton = (Button) findViewById(R.id.main_menu_button);
+        mainMenuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMusicPlayer.stopClicked(v);
+                Intent i = new Intent(TimerActivity.this, MenuActivity.class);
+                startActivity(i);
+            }
+        });
+
+        mMusicPlayer.SetupMusicService(this);
+        mMusicPlayer.setupMusicPlayerBroadcasts(
+                LocalBroadcastManager.getInstance(getApplicationContext()));
     }
 
 
@@ -120,6 +140,13 @@ public class TimerActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onDestroy() {
+        mMusicPlayer.cleanUp();
+
+        super.onDestroy();
+    }
+
     private void setClock() {
         long hours = mTime / 3600000L;
         long mins = (mTime - hours * 3600000L) / 60000L;
@@ -140,5 +167,20 @@ public class TimerActivity extends Activity {
         } else {
             mStartButton.setText("Start");
         }
+    }
+
+    public void musicPauseClicked(View view)
+    {
+        mMusicPlayer.pauseClicked(view);
+    }
+
+    public void musicSkipClicked(View view)
+    {
+        mMusicPlayer.skipClicked(view);
+    }
+
+    public void musicStopClicked(View view)
+    {
+        mMusicPlayer.stopClicked(view);
     }
 }

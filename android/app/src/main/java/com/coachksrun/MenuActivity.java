@@ -15,6 +15,7 @@ import com.coachksrun.Tracks8.utility;
 import com.coachksrun.maps.MapModeSelect;
 import com.coachksrun.maps.RouteListActivity;
 import com.coachksrun.maps.RouteSelection;
+import com.coachksrun.maps.TimerActivity;
 
 import org.json.JSONObject;
 
@@ -66,6 +67,14 @@ public class MenuActivity extends Activity {
                 Intent intent = new Intent(MenuActivity.this, PreferencesActivity.class);
                 intent.putExtra("fb_user_id", fb_user_id);
                 intent.putExtra("status", "returning");
+                startActivity(intent);
+            }
+        });
+
+        ImageButton timed_run_button = (ImageButton) findViewById(R.id.timed_run_button);
+        timed_run_button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(MenuActivity.this, TimerActivity.class);
                 startActivity(intent);
             }
         });

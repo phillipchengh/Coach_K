@@ -2,10 +2,6 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:paddingBottom="@dimen/activity_vertical_margin"
                 tools:context="com.coachksrun.maps.TimerActivity"
                 android:orientation="vertical">
 
@@ -16,20 +12,86 @@
         android:gravity="center"
         android:layout_weight="0.8"
         android:textSize="60sp"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="0px"
-        android:text="@string/button_set_time"
-        android:id="@+id/timer_set_button"
-        android:layout_weight="0.1"
-        android:layout_gravity="center_horizontal"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="0px"
-        android:text="@string/button_start"
-        android:id="@+id/timer_start_button"
-        android:layout_weight="0.1"
-        android:layout_gravity="center_horizontal"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_set_time"
+            android:id="@+id/timer_set_button"
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_start"
+            android:id="@+id/timer_start_button"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/main_menu_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="MENU"/>
+
+        </LinearLayout>
 
 
+    <LinearLayout
+        android:id="@+id/track_control_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#EEEEEE"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/track_name"
+            android:textSize="14sp"
+            android:text=""
+            android:lines="1"
+            android:fontFamily="sans-serif-light"
+            android:textColor="#000"
+            android:layout_weight="0.4"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:gravity="left|center"
+            android:layout_marginLeft="12dp"/>
+
+        <ImageButton
+            android:id="@+id/button_pause"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_media_pause"
+
+            android:onClick="musicPauseClicked" />
+
+        <ImageButton
+            android:id="@+id/button_next"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_media_next"
+
+            android:onClick="musicSkipClicked" />
+
+        <ImageButton
+            android:id="@+id/button_stop"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_delete"
+
+
+            android:onClick="musicStopClicked" />
+
+    </LinearLayout>
 </LinearLayout>

@@ -30,15 +30,15 @@
     <string name="tracks8_next">Skip</string>
     <string name="tracks8_stop">Stop</string>
     <string name="tracks8_loading">Hold on...</string>
-    <string name="get_yelp">Find Pitstops</string>
-    <string name="route_finished_button">Done running!</string>
+    <string name="get_yelp">FIND PITSTOPS</string>
+    <string name="route_finished_button">DONE RUNNING</string>
     <string name="empty_run_list">No runs found!</string>
     <string name="title_activity_menu">MenuActivity</string>
     <string name="title_activity_run_summary">RunSummaryActivity</string>
     <string name="title_activity_route_list">RouteListActivity</string>
     <string name="title_activity_timer">TimerActivity</string>
-    <string name="button_start">Start</string>
-    <string name="button_stop">Stop</string>
-    <string name="button_set_time">Set Time</string>
+    <string name="button_start">START</string>
+    <string name="button_stop">STOP</string>
+    <string name="button_set_time">SET TIME</string>
 
 </resources>

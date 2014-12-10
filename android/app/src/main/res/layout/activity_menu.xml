@@ -11,16 +11,26 @@
         android:orientation="vertical">
 
         <ImageButton
-            android:text="Map"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/runbutton"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             android:padding="0dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="0dp"
             android:layout_marginBottom="2dp"
             android:id="@+id/map_button" />
+
+        <ImageButton
+            android:id="@+id/timed_run_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/timedrunbutton"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:padding="0dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"/>
 
         <ImageButton
             android:id="@+id/history_button"
@@ -41,8 +51,9 @@
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             android:padding="0dp"
-            android:layout_marginTop="2dp"
-            android:layout_marginBottom="2dp"/>
+            android:layout_marginTop="2dp"/>
+
+
 
 
 
