@@ -5,13 +5,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.coachksrun.R;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +28,13 @@ public class RouteListActivity extends ListActivity {
     private ArrayList<Route> routes = new ArrayList<Route>();
     private ArrayList<String> timestamps = new ArrayList<String>();
     private ArrayAdapter<String> adapter;
+
+    public final static String EXTRA_LAT_LNG = "com.coachksrun.maps.lat_lng";
+    public final static String EXTRA_POLYLINE = "com.coachksrun.maps.polyline";
+    public final static String EXTRA_DISTANCE = "com.coachksrun.maps.distance";
+    public final static String EXTRA_SECONDS = "com.coachksrun.maps.seconds";
+    public final static String EXTRA_MINUTES = "com.coachksrun.maps.minutes";
+    public final static String EXTRA_HOURS = "com.coachksrun.maps.hours";
 
     //TODO: need the Facebook ID
     private int id;
@@ -132,5 +143,33 @@ public class RouteListActivity extends ListActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onListItemClick(ListView listView, View view, int position,
+                                long id) {
+        Intent data = new Intent(RouteListActivity.this, RunSummaryActivity.class);
+        Route r = routes.get(position);
+
+        ArrayList<PolylineOptions> polylineOptionsArray = new ArrayList<PolylineOptions>();
+
+        for(int i = 0; i < r.coords.size()-1;) {
+            LatLng latLng = r.coords.get(i);
+            LatLng previousLatLng = r.coords.get(++i);
+            PolylineOptions polylineOptions = new PolylineOptions()
+                    .add(previousLatLng, latLng)
+                    .width(5)
+                    .color(Color.GREEN);
+            polylineOptionsArray.add(polylineOptions);
+        }
+
+        data.putExtra(EXTRA_LAT_LNG, r.coords);
+        data.putExtra(EXTRA_POLYLINE, polylineOptionsArray);
+        data.putExtra(EXTRA_DISTANCE, r.distance);
+        data.putExtra(EXTRA_SECONDS, r.seconds);
+        data.putExtra(EXTRA_MINUTES, r.minutes);
+        data.putExtra(EXTRA_HOURS, r.hours);
+
+        startActivity(data);
     }
 }

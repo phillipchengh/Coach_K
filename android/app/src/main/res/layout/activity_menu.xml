@@ -24,12 +24,22 @@
         android:id="@+id/map_button" />
 
     <Button
-        android:text="Preferences"
+        android:id="@+id/history_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/map_button"
         android:layout_centerHorizontal="true"
+        android:text="History" />
+
+    <Button
+        android:text="Preferences"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/history_button"
+        android:layout_centerHorizontal="true"
         android:id="@+id/preferences_button" />
+
+
 
     <TextView
         android:layout_width="fill_parent"

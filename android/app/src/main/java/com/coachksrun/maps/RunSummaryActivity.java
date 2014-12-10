@@ -48,6 +48,7 @@ public class RunSummaryActivity extends Activity {
         ((TextView) findViewById(R.id.summary_total_distance)).setText(
                 "Total Distance: " + String.valueOf(distance));
 
+
         String timeString = "Time Elapsed: ";
         int hours = intent.getIntExtra(EXTRA_HOURS, -1);
         if(hours > 0) timeString += Integer.toString(hours) + ":";
@@ -64,8 +65,9 @@ public class RunSummaryActivity extends Activity {
 
         ((TextView) findViewById(R.id.summary_total_time)).setText(timeString);
 
+        int totalSeconds = hours*3600+minutes*60+seconds;
         ((TextView) findViewById(R.id.summary_avg_pace)).setText("Average Pace: " +
-                String.valueOf(Math.abs(distance/intent.getLongExtra(EXTRA_SECONDS, -1) * 3600)));
+                String.valueOf(Math.abs(distance/totalSeconds * 3600)));
     }
 
 

@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.coachksrun.Tracks8.utility;
 import com.coachksrun.maps.MapModeSelect;
+import com.coachksrun.maps.RouteListActivity;
 import com.coachksrun.maps.RouteSelection;
 
 import org.json.JSONObject;
@@ -48,6 +49,15 @@ public class MenuActivity extends Activity {
                 startActivity(intent);
             }
         });
+
+        Button history_button = (Button) findViewById(R.id.history_button);
+        history_button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(MenuActivity.this, RouteListActivity.class);
+                startActivity(intent);
+            }
+        });
+
         Button preferences_button = (Button) findViewById(R.id.preferences_button);
         preferences_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
