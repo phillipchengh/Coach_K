@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.coachksrun.Tracks8.utility;
@@ -32,6 +33,7 @@ public class MenuActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+        getActionBar().hide();
         fb_user_id = getIntent().getStringExtra("fb_user_id");
         (new CheckUser()).execute();
     }
@@ -42,7 +44,7 @@ public class MenuActivity extends Activity {
     }
 
     private void initListeners() {
-        Button map_button = (Button) findViewById(R.id.map_button);
+        ImageButton map_button = (ImageButton) findViewById(R.id.map_button);
         map_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(MenuActivity.this, RouteSelection.class);
@@ -50,7 +52,7 @@ public class MenuActivity extends Activity {
             }
         });
 
-        Button history_button = (Button) findViewById(R.id.history_button);
+        ImageButton history_button = (ImageButton) findViewById(R.id.history_button);
         history_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(MenuActivity.this, RouteListActivity.class);
@@ -58,7 +60,7 @@ public class MenuActivity extends Activity {
             }
         });
 
-        Button preferences_button = (Button) findViewById(R.id.preferences_button);
+        ImageButton preferences_button = (ImageButton) findViewById(R.id.preferences_button);
         preferences_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(MenuActivity.this, PreferencesActivity.class);
